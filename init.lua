@@ -2,7 +2,7 @@
 
 local mn = "forge"
 
-local electrode_demand = 2000
+local electrode_min_demand = 20
 
 local forge = {}
 
@@ -12,6 +12,7 @@ local melt_yields = {}
 local meltable_ores = {} 
 local cools_to = {}
 local melt_densities = {}
+local melt_energy_requirement = {}
 local molten_sources = {}
 
 
@@ -47,7 +48,7 @@ minetest.register_node(mn..":slag", {
     description = "Slag",
     tiles = { "default_gravel.png^[colorize:brown:80" },
     is_ground_content = true,
-    groups = {cracky=1, cobble=1, refractory=1, falling_node = 1},
+    groups = {cracky=1, cobble=1, refractory=1},
     sounds = default.node_sound_stone_defaults(),
 }) 
 
@@ -178,17 +179,22 @@ end
 
 ]]
 
+local max_heat = 1000;
 
 function meltNear(pos, node) 
 	
 	local meta = minetest.get_meta(pos)
 	local input = meta:get_int("LV_EU_input")
+	local heat = meta:get_int("stored_eu")
+	local current_charge = meta:get_int("internal_EU_charge")
 	
-	if input < electrode_demand then 
+	if false and input < electrode_min_demand then 
 		meta:set_string("infotext", "Electrode Unpowered")
 		return
 	end
 
+	heat = math.min(max_heat, heat + input)
+	
 	meta:set_string("infotext", "Electrode Active")
 	
 	local ore_nodes = minetest.find_nodes_in_area(
@@ -199,17 +205,23 @@ function meltNear(pos, node)
 	
 	for _,p in ipairs(ore_nodes) do
 		local n = minetest.get_node(p)
+		local req = melt_energy_requirement[n.name]
+		
+		if heat < req then
+			break
+		end
+		
+		heat = heat - req
+		
 		local new = randomMelt(n.name)
-
 		minetest.set_node(p, {name=new})
-		return
 	end
 	
-	
+	meta:set_int("stored_eu", heat)
 end
 
 
-forge.register_ore = function(name, yields)
+forge.register_ore = function(name, eu_to_melt, yields)
 	local y2 = {}
 	local total = 0
 
@@ -221,54 +233,55 @@ forge.register_ore = function(name, yields)
 	table.insert(meltable_ores, name)
 	melt_yields[name] = y2
 	melt_total[name] = total
+	melt_energy_requirement[name] = eu_to_melt
 end
 
 -- these numbers represent the proportions of the node, not the minetest-style chances
-forge.register_ore("default:desert_cobble", {
+forge.register_ore("default:desert_cobble", 400, {
 	steel = 1,
 	copper = 3,
 	slag = 40,
 })
 
-forge.register_ore("default:cobble", {
+forge.register_ore("default:cobble", 400, {
 	steel = 3,
 	copper = 1,
 	slag = 40,
 })
 
-forge.register_ore("default:dirt", {
+forge.register_ore("default:dirt", 550, {
 	steel = 10,
 	gold = 1,
 	slag = 1000,
 })
-forge.register_ore("default:dirt_with_grass", {
+forge.register_ore("default:dirt_with_grass", 550, {
 	steel = 10,
 	gold = 1,
 	slag = 1000,
 })
 
-forge.register_ore("default:gravel", {
+forge.register_ore("default:gravel", 380, {
 	steel = 2,
 	gold = 1,
 	slag = 100,
 })
 
-forge.register_ore("default:desert_sand", {
+forge.register_ore("default:desert_sand", 350, {
 	glass = 10,
 	slag = 1,
 })
 
-forge.register_ore("default:sand", {
+forge.register_ore("default:sand", 350, {
 	glass = 20,
 	slag = 1,
 })
 
-forge.register_ore("default:sandstone", {
+forge.register_ore("default:sandstone", 370, {
 	glass = 10,
 	slag = 1,
 })
 
-forge.register_ore(mn..":slag", {
+forge.register_ore(mn..":slag", 600, {
 	steel = 1,
 	copper = 1,
 	glass = 1,
@@ -276,19 +289,19 @@ forge.register_ore(mn..":slag", {
 })
 
 -- remelting
-forge.register_ore("default:steelblock", {steel = 1})
-forge.register_ore("default:copperblock", {copper = 1})
-forge.register_ore("default:goldblock", {gold = 1})
-forge.register_ore("default:bronzeblock", {bronze = 1})
-forge.register_ore("moreores:tin_block", {tin = 1})
-forge.register_ore("moreores:silver_block", {silver = 1})
-forge.register_ore("technic:chromium_block", {chromium = 1})
-forge.register_ore("technic:zinc_block", {zinc = 1})
-forge.register_ore("technic:lead_block", {lead = 1})
-forge.register_ore("technic:stainless_steel_block", {stainless_steel = 1})
-forge.register_ore("technic:carbon_steel_block", {steel = 1})
-forge.register_ore("technic:cast_iron_block", {steel = 1})
-forge.register_ore("default:glass", {glass = 1})
+forge.register_ore("default:steelblock", 200, {steel = 1})
+forge.register_ore("default:copperblock", 200, {copper = 1})
+forge.register_ore("default:goldblock", 200, {gold = 1})
+forge.register_ore("default:bronzeblock", 200, {bronze = 1})
+forge.register_ore("moreores:tin_block", 100, {tin = 1})
+forge.register_ore("moreores:silver_block", 200, {silver = 1})
+forge.register_ore("technic:chromium_block", 200, {chromium = 1})
+forge.register_ore("technic:zinc_block", 200, {zinc = 1})
+forge.register_ore("technic:lead_block", 60, {lead = 1})
+forge.register_ore("technic:stainless_steel_block", 200, {stainless_steel = 1})
+forge.register_ore("technic:carbon_steel_block", 200, {steel = 1})
+forge.register_ore("technic:cast_iron_block", 200, {steel = 1})
+forge.register_ore("default:glass", 200, {glass = 1})
 
 
 minetest.register_node(mn..":electrode", {
@@ -315,6 +328,7 @@ minetest.register_node(mn..":electrode", {
 		meta:set_int("enabled", 0)
 		meta:set_int("active", 0)
 		meta:set_string("power_flag", "LV")
+		meta:get_int("stored_eu", 0)
 		meta:set_int("LV_EU_demand", 0)	
 	end,
 })
@@ -329,9 +343,15 @@ minetest.register_craft({
 })
 
 local function set_electrode_demand(meta)
-	local machine_name = "Arc Electrode"
-	meta:set_int("LV_EU_demand", electrode_demand)
-	meta:set_string("infotext", (meta:get_int("LV_EU_input") >= electrode_demand and "%s Active" or "%s Unpowered"):format(machine_name))
+	local machine_name = "Electrode"
+ 	meta:set_int("LV_EU_demand", 20000)
+-- 	meta:set_int("LV_EU_demand", electrode_demand)
+	local input = meta:get_int("LV_EU_input")
+	if input ~= nil then
+		meta:set_string("infotext", (input > 0 and "%s Active" or "%s Unpowered"):format(machine_name))
+	else
+		meta:set_string("infotext", machine_name.. " has no network.")
+	end
 end
 
 
@@ -363,14 +383,17 @@ minetest.register_node(mn..":electrode_on", {
 		meta:set_int("enabled", 1)
 		meta:set_int("active", 1)
 		meta:set_string("power_flag", "LV")
+		meta:set_int("stored_eu", 0)
 		--meta:set_int("LV_EU_demand", 200)
 		set_electrode_demand(meta)
 	end,
 	technic_run = meltNear,
 })
 
-technic.register_machine("LV", mn..":electrode", technic.receiver)
-technic.register_machine("LV", mn..":electrode_on", technic.receiver)
+-- technic.register_machine("LV", mn..":electrode", technic.receiver)
+-- technic.register_machine("LV", mn..":electrode_on", technic.receiver)
+technic.register_machine("LV", mn..":electrode", technic.battery)
+technic.register_machine("LV", mn..":electrode_on", technic.battery)
 
 
 
@@ -596,7 +619,7 @@ forge.register_metal({
 -- cooling
 minetest.register_abm({
 	nodenames = {"group:molten_ore"},
-	interval = 2,
+	interval = 10,
 	chance = 15,
 	action = function(pos)
 		local node = minetest.get_node_or_nil(pos)
@@ -607,15 +630,28 @@ minetest.register_abm({
 			return 
 		end
 	
-		if nil ~= minetest.find_node_near(pos, 10, {mn..":electrode_on"}) then
+		-- don't cool near active electrodes
+		if nil ~= minetest.find_node_near(pos, 4, {mn..":electrode_on"}) then
 			return
 		end
 		
 		-- let ore fall before cooling
 		local below = minetest.get_node_or_nil({x=pos.x, y=pos.y-1, z=pos.z})
-		if below and 0 ~= minetest.get_item_group(below.name, mn..":molten_ore_flowing") then
-			return
+		if below then
+			if 0 ~= minetest.get_item_group(below.name, "molten_ore_flowing") then
+				return
+			end
+			
+			-- melt cools 3 times more slowly over refractory materials
+			-- helps prevent clogs in structures
+			if 0 ~= minetest.get_item_group(below.name, "refractory") then
+				if math.random(3) >= 2 then
+					return
+				end
+			end
 		end
+		
+		
 		
 		minetest.set_node(pos, {name = cold})
 		nodeupdate(pos)
@@ -637,10 +673,9 @@ minetest.register_abm({
 
 
 
--- slag swaps with flowing slag below it
+-- fluid dynamics
 minetest.register_abm({
 	nodenames = {"group:molten_ore"},
-	--neighbors = {mn..":molten_slag_flowing"},
 	interval = 1,
 	chance = 1,
 	action = function(pos)
@@ -676,11 +711,18 @@ minetest.register_abm({
 		
 		for _,fp in ipairs(flow_nodes) do
 			local n = minetest.get_node(fp);
-			minetest.set_node(fp, {name=node.name})
-			minetest.set_node(pos, {name=n.name})
-			return
+			-- check above to make sure it can get here
+			local na = minetest.get_node({x=fp.x, y=fp.y+1, z=fp.z})
+			local g = minetest.get_item_group(na.name, "molten_ore")
+	--		print("name: " .. na.name .. " l: " ..g)
+			if g > 0 then
+				minetest.set_node(fp, {name=node.name})
+				minetest.set_node(pos, {name=n.name})
+				return
+			end
 		end
 	
+		
 		-- look two nodes out
 		flow_nodes = minetest.find_nodes_in_area(
 			{x=pos.x - 2, y=pos.y - 1, z=pos.z - 2},
@@ -690,16 +732,29 @@ minetest.register_abm({
 		
 		for _,fp in ipairs(flow_nodes) do
 			local n = minetest.get_node(fp);
-			minetest.set_node(fp, {name=node.name})
-			minetest.set_node(pos, {name=n.name})
-			return
+			
+			-- check above
+			local na = minetest.get_node({x=fp.x, y=fp.y+1, z=fp.z})
+			local ga = minetest.get_item_group(na.name, "molten_ore")
+			
+			if ga > 0 then
+				-- check between above and node
+				local nb = minetest.get_node({x=(fp.x + pos.x) / 2, y=pos.y, z=(fp.z + pos.z) / 2})
+				local gb = minetest.get_item_group(nb.name, "molten_ore")
+				
+				if gb > 0 then
+				--print("name: " .. na.name .. " l: " ..ga .. " bname: " .. nb.name .. " lb: " ..gb)
+					minetest.set_node(fp, {name=node.name})
+					minetest.set_node(pos, {name=n.name})
+					return
+				end
+			end
 		end
-	
 	end,
 })
 
 
--- dense metals sink to the bottomt
+-- dense metals sink to the bottom
 minetest.register_abm({
 	nodenames = {"group:molten_ore_source"},
 	neightbors = {"group:molten_ore_source"},
@@ -739,15 +794,16 @@ minetest.register_abm({
 -- ore destroys things
 minetest.register_abm({
 	nodenames = {"group:molten_ore_source"},
-	interval = 10,
-	chance = 10,
+	interval = 5,
+ 	chance = 40,
 	action = function(pos)
 		local node = minetest.get_node_or_nil(pos)
 		if 0 == minetest.get_item_group(node.name, "molten_ore_source") then
 			return
 		end
 		
-		local flowing_node = node.name.."_flowing" 
+		-- this only works if destruction is slower than cooling
+		local flowing_node = randomMelt(node.name) 
 		
 		local try_replace = function(p)
 			local n = minetest.get_node_or_nil(p)
@@ -773,4 +829,3 @@ minetest.register_abm({
 	end,
 })
 
--- minetest.register_alias("geology:diamond_block", "technic:diamondblock")

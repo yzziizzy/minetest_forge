@@ -427,6 +427,7 @@ forge.register_metal = function(opts)
 		liquid_alternative_source = mn..":molten_"..opts.name,
 		liquid_viscosity = 2,
 		liquid_renewable = false,
+		liquid_range = 2,
 		damage_per_second = 2 * 2,
 		post_effect_color = {a = 192, r = 255, g = 64, b = 0},
 		groups = {lava = 2, liquid = 2, hot = 3, igniter = 1, molten_ore=3, molten_ore_source=1},
@@ -476,6 +477,7 @@ forge.register_metal = function(opts)
 		liquid_alternative_source = mn..":molten_"..opts.name,
 		liquid_viscosity = 2,
 		liquid_renewable = false,
+		liquid_range = 2,
 		damage_per_second = 1 * 2,
 		post_effect_color = {a = 192, r = 255, g = 64, b = 0},
 		groups = {lava = 2, liquid = 2, hot = 3, igniter = 1, molten_ore=1, molten_ore_flowing=1,
@@ -594,8 +596,8 @@ forge.register_metal({
 -- cooling
 minetest.register_abm({
 	nodenames = {"group:molten_ore"},
-	interval = 1,
-	chance = 10,
+	interval = 2,
+	chance = 15,
 	action = function(pos)
 		local node = minetest.get_node_or_nil(pos)
 	
@@ -610,11 +612,13 @@ minetest.register_abm({
 		end
 		
 		-- let ore fall before cooling
-		if 0 ~= minetest.get_node_group({x=pos.x, y=pos.y-1, z=pos.z}, mn..":molten_ore_flowing") then
+		local below = minetest.get_node_or_nil({x=pos.x, y=pos.y-1, z=pos.z})
+		if below and 0 ~= minetest.get_item_group(below.name, mn..":molten_ore_flowing") then
 			return
 		end
 		
 		minetest.set_node(pos, {name = cold})
+		nodeupdate(pos)
 		minetest.sound_play("default_cool_lava",
 			{pos = pos, max_hear_distance = 16, gain = 0.25})
 	end,
@@ -643,7 +647,7 @@ minetest.register_abm({
 		local flow_nodes;
 
 		local node = minetest.get_node(pos)
-		if minetest.get_node_group(node.name, "molten_ore") < 3 then
+		if minetest.get_item_group(node.name, "molten_ore") < 3 then
 			return
 		end
 		
@@ -739,7 +743,7 @@ minetest.register_abm({
 	chance = 10,
 	action = function(pos)
 		local node = minetest.get_node_or_nil(pos)
-		if 0 == minetest.get_node_group(node.name, "molten_ore_source") then
+		if 0 == minetest.get_item_group(node.name, "molten_ore_source") then
 			return
 		end
 		
@@ -748,8 +752,8 @@ minetest.register_abm({
 		local try_replace = function(p)
 			local n = minetest.get_node_or_nil(p)
 			if n ~= nil then
-				if 0 == minetest.get_node_group(n.name, "refractory") then 
-					if 0 == minetest.get_node_group(n.name, "molten_ore") then
+				if 0 == minetest.get_item_group(n.name, "refractory") then 
+					if 0 == minetest.get_item_group(n.name, "molten_ore") then
 						minetest.set_node(p, {name=flowing_node})
 						return true
 					end

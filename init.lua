@@ -181,6 +181,16 @@ end
 
 function meltNear(pos, node) 
 	
+	local meta = minetest.get_meta(pos)
+	local input = meta:get_int("LV_EU_input")
+	
+	if input < electrode_demand then 
+		meta:set_string("infotext", "Electrode Unpowered")
+		return
+	end
+
+	meta:set_string("infotext", "Electrode Active")
+	
 	local ore_nodes = minetest.find_nodes_in_area(
 		{x=pos.x - 2, y=pos.y - 4,z=pos.z - 2},
 		{x=pos.x + 2, y=pos.y, z=pos.z + 2},
@@ -269,6 +279,15 @@ forge.register_ore(mn..":slag", {
 forge.register_ore("default:steelblock", {steel = 1})
 forge.register_ore("default:copperblock", {copper = 1})
 forge.register_ore("default:goldblock", {gold = 1})
+forge.register_ore("default:bronzeblock", {bronze = 1})
+forge.register_ore("moreores:tin_block", {tin = 1})
+forge.register_ore("moreores:silver_block", {silver = 1})
+forge.register_ore("technic:chromium_block", {chromium = 1})
+forge.register_ore("technic:zinc_block", {zinc = 1})
+forge.register_ore("technic:lead_block", {lead = 1})
+forge.register_ore("technic:stainless_steel_block", {stainless_steel = 1})
+forge.register_ore("technic:carbon_steel_block", {steel = 1})
+forge.register_ore("technic:cast_iron_block", {steel = 1})
 forge.register_ore("default:glass", {glass = 1})
 
 
@@ -279,7 +298,7 @@ minetest.register_node(mn..":electrode", {
 	paramtype = "light",
 	paramtype2 = "facedir",
 	is_ground_content = false,
-	groups = {cracky=3, refractory=1 },
+	groups = {cracky=3, refractory=1, technic_machine=1, technic_lv=1 },
 	node_box = {
 		type = "fixed",
 		fixed = {
@@ -291,7 +310,13 @@ minetest.register_node(mn..":electrode", {
 	on_punch = function (pos, node)
 		minetest.set_node(pos, {name=mn..":electrode_on"})
 	end,
-
+	on_construct = function(pos)
+		local meta = minetest.get_meta(pos)
+		meta:set_int("enabled", 0)
+		meta:set_int("active", 0)
+		meta:set_string("power_flag", "LV")
+		meta:set_int("LV_EU_demand", 0)	
+	end,
 })
 
 minetest.register_craft({
@@ -344,6 +369,7 @@ minetest.register_node(mn..":electrode_on", {
 	technic_run = meltNear,
 })
 
+technic.register_machine("LV", mn..":electrode", technic.receiver)
 technic.register_machine("LV", mn..":electrode_on", technic.receiver)
 
 
@@ -403,7 +429,7 @@ forge.register_metal = function(opts)
 		liquid_renewable = false,
 		damage_per_second = 2 * 2,
 		post_effect_color = {a = 192, r = 255, g = 64, b = 0},
-		groups = {lava = 2, liquid = 2, hot = 3, igniter = 1, molten_ore=3},
+		groups = {lava = 2, liquid = 2, hot = 3, igniter = 1, molten_ore=3, molten_ore_source=1},
 	})
 
 
@@ -476,10 +502,79 @@ forge.register_metal({
 })
 
 forge.register_metal({
+	name="bronze",
+	Name="Bronze",
+	cools="default:bronzeblock",
+	density=9,
+})
+
+forge.register_metal({
 	name="gold",
 	Name="Gold",
 	cools="default:goldblock",
 	density=20,
+})
+forge.register_metal({
+	name="silver",
+	Name="Silver",
+	cools="moreores:silver_block",
+	density=16,
+})
+
+forge.register_metal({
+	name="zinc",
+	Name="Zinc",
+	cools="technic:zinc_block",
+	density=4,
+})
+
+forge.register_metal({
+	name="tin",
+	Name="Tin",
+	cools="moreores:tin_block",
+	density=4,
+})
+
+forge.register_metal({
+	name="chromium",
+	Name="Chromium",
+	cools="technic:chromium_block",
+	density=12,
+})
+
+forge.register_metal({
+	name="lead",
+	Name="Lead",
+	cools="technic:lead_block",
+	density=19,
+})
+
+forge.register_metal({
+	name="carbon_steel",
+	Name="Carbon Steel",
+	cools="technic:carbon_steel_block",
+	density=10,
+})
+
+forge.register_metal({
+	name="stainless_steel",
+	Name="Stainless Steel",
+	cools="technic:stainless_steel_block",
+	density=10,
+})
+
+forge.register_metal({
+	name="cast_iron",
+	Name="Cast Iron",
+	cools="technic:cast_iron_block",
+	density=10,
+})
+
+forge.register_metal({
+	name="brass",
+	Name="Brass",
+	cools="technic:brass_block",
+	density=7,
 })
 
 forge.register_metal({
@@ -495,8 +590,8 @@ forge.register_metal({
 	cools=mn..":slag",
 	density=3,
 })
-	
 
+-- cooling
 minetest.register_abm({
 	nodenames = {"group:molten_ore"},
 	interval = 1,
@@ -511,6 +606,11 @@ minetest.register_abm({
 		end
 	
 		if nil ~= minetest.find_node_near(pos, 10, {mn..":electrode_on"}) then
+			return
+		end
+		
+		-- let ore fall before cooling
+		if 0 ~= minetest.get_node_group({x=pos.x, y=pos.y-1, z=pos.z}, mn..":molten_ore_flowing") then
 			return
 		end
 		
@@ -595,22 +695,55 @@ minetest.register_abm({
 })
 
 
+-- dense metals sink to the bottomt
+minetest.register_abm({
+	nodenames = {"group:molten_ore_source"},
+	neightbors = {"group:molten_ore_source"},
+	interval = 4,
+	chance = 2,
+	action = function(pos)
+		local light_nodes;
+
+		local node = minetest.get_node(pos)
+
+		-- look one node out
+		light_nodes = minetest.find_nodes_in_area(
+			{x=pos.x - 1, y=pos.y - 1, z=pos.z - 1},
+			{x=pos.x + 1, y=pos.y - 1, z=pos.z + 1},
+			"group:molten_ore_source"
+		)
+		
+		for _,fp in ipairs(light_nodes) do
+			local n = minetest.get_node(fp);
+			
+			local sd = melt_densities[node.name]
+			local dd = melt_densities[n.name]
+			
+			if dd and sd and dd < sd then
+				minetest.set_node(fp, {name=node.name})
+				minetest.set_node(pos, {name=n.name})
+				return
+			end
+		
+		end
+	
+	end,
+})
+
+
 
 -- ore destroys things
 minetest.register_abm({
-	nodenames = {"group:molten_ore"},
-	--neighbors = {mn..":molten_slag_flowing"},
-	interval = 5,
-	chance = 100,
+	nodenames = {"group:molten_ore_source"},
+	interval = 10,
+	chance = 10,
 	action = function(pos)
-	
-		local node = minetest.get_node(pos)
-		if minetest.get_node_group(node.name, "molten_ore") < 3 then
+		local node = minetest.get_node_or_nil(pos)
+		if 0 == minetest.get_node_group(node.name, "molten_ore_source") then
 			return
 		end
 		
-		local flowing_node = melts_to[node.name] or node.name.."_flowing" 
-
+		local flowing_node = node.name.."_flowing" 
 		
 		local try_replace = function(p)
 			local n = minetest.get_node_or_nil(p)
@@ -635,6 +768,5 @@ minetest.register_abm({
 		-- above is not destroyed
 	end,
 })
-
 
 -- minetest.register_alias("geology:diamond_block", "technic:diamondblock")

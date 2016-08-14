@@ -42,4 +42,4 @@ Input materials and what you might get out of them. Yields vary; some things res
 
 Metal blocks can be remelted without loss. Reprocessing slag over and over may yield small returns.
 
-WFTPL / Unlicense
+WTFPL / Unlicense

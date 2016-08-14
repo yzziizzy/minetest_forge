@@ -3,28 +3,28 @@
 Huge electric arc furnaces for minetest, with non-renewable finite-liquids-like molten ores and metals.
 
 
-![overview](http://imgur.com/aP6cAvJ)
+![overview](http://i.imgur.com/aP6cAvJ.jpg)
 
 
 Crafts
 ======
 
 First make refractory clay:
-![refractory clay](http://imgur.com/EaeVof3)
+![refractory clay](http://i.imgur.com/EaeVof3.jpg)
 
 Refractory clay can also be made from slag:
-![refractory clay from slag](http://imgur.com/jmiuzXB)
+![refractory clay from slag](http://i.imgur.com/jmiuzXB.jpg)
 
 Then craft refractory brick blocks
-![fire the bricks](http://imgur.com/r34faDx)
-![craft the blocks](http://imgur.com/k4YTehm)
+![fire the bricks](http://i.imgur.com/r34faDx.jpg)
+![craft the blocks](http://i.imgur.com/k4YTehm.jpg)
 
 
 Build a crucible where the bottom can be accessed. I used mesecon sticky pistons for gates.
 Place the electrode in the top, give it a lot of juice, and punch to turn it on. But before that fill the crucible with ore.
 
 Electrode:
-![electrode](http://imgur.com/34udvpD)
+![electrode](http://i.imgur.com/34udvpD.jpg)
 
 Molten ore will flow out of hols created in the bottom and eventually cool. Be careful, molten ore will destroy most materials. Use the refractory bricks.
 

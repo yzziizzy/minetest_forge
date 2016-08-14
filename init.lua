@@ -294,6 +294,14 @@ minetest.register_node(mn..":electrode", {
 
 })
 
+minetest.register_craft({
+	output = mn..':electrode',
+	recipe = {
+		{"technic:lv_cable0", "default:steelblock", "technic:lv_cable0"},
+		{"default:steel_ingot", "", "default:steel_ingot"},
+		{"default:steel_ingot", "", "default:steel_ingot"},
+	}
+})
 
 local function set_electrode_demand(meta)
 	local machine_name = "Arc Electrode"

@@ -17,7 +17,7 @@ local molten_sources = {}
 
 
 function randomMelt(name) 
-	if melt_total[name] == 0 then
+	if melt_total[name] == 0 or melt_total[name] == nil then
 		return mn..":molten_slag"
 	end
 	

@@ -616,7 +616,7 @@ forge.register_metal({
 	density=3,
 })
 
--- cooling
+-- air cooling
 minetest.register_abm({
 	nodenames = {"group:molten_ore"},
 	interval = 10,
@@ -660,6 +660,54 @@ minetest.register_abm({
 	end,
 })
 
+
+-- water cooling
+minetest.register_abm({
+	nodenames = {"group:molten_ore"},
+	neighbors = {
+		"default:water_source", 
+		"default:water_flowing", 
+		"default:river_water_source", 
+		"default:river_water_flowing"
+	},
+	interval = 2,
+	chance = 2,
+	action = function(pos)
+		local node = minetest.get_node_or_nil(pos)
+		local cold = cools_to[node.name]
+		
+		if node == nil or cold == nil then 
+			return 
+		end
+		
+		minetest.set_node(pos, {name = cold})
+		nodeupdate(pos)
+		spawnSteam(pos)
+		minetest.sound_play("default_cool_lava",
+			{pos = pos, max_hear_distance = 16, gain = 0.25})
+	end,
+})
+
+
+function spawnSteam(pos) 
+	pos.y = pos.y+1
+	minetest.add_particlespawner({
+		amount = 20,
+		time = 3,
+		minpos = vector.subtract(pos, 2 / 2),
+		maxpos = vector.add(pos, 2 / 2),
+		minvel = {x=-0.1, y=0, z=-0.1},
+		maxvel = {x=0.1,  y=0.5,  z=0.1},
+		minacc = {x=-0.1, y=0.1, z=-0.1},
+		maxacc = {x=0.1, y=0.3, z=0.1},
+		minexptime = 1,
+		maxexptime = 3,
+		minsize = 10,
+		maxsize = 20,
+		texture = mn.."_steam.png^[colorize:white:120",
+	})
+	
+end
 --[[
 minetest.register_abm({
 	nodenames = {mn..":hot_steelblock"},

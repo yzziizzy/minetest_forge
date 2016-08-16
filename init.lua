@@ -3,6 +3,7 @@
 local mn = "forge"
 
 local electrode_min_demand = 20
+local setting_melt_difficulty = 10
 
 local forge = {}
 
@@ -179,7 +180,7 @@ end
 
 ]]
 
-local max_heat = 1000;
+local max_heat = 0;
 
 function meltNear(pos, node) 
 	
@@ -193,13 +194,13 @@ function meltNear(pos, node)
 		return
 	end
 
-	heat = math.min(max_heat, heat + input)
+	heat = heat + input
 	
 	meta:set_string("infotext", "Electrode Active")
 	
 	local ore_nodes = minetest.find_nodes_in_area(
-		{x=pos.x - 2, y=pos.y - 4,z=pos.z - 2},
-		{x=pos.x + 2, y=pos.y, z=pos.z + 2},
+		{x=pos.x - 3, y=pos.y - 6,z=pos.z - 3},
+		{x=pos.x + 3, y=pos.y, z=pos.z + 3},
 		meltable_ores
 	)
 	
@@ -217,7 +218,8 @@ function meltNear(pos, node)
 		minetest.set_node(p, {name=new})
 	end
 	
-	meta:set_int("stored_eu", heat)
+	meta:set_int("stored_eu", math.min(max_heat, heat)
+)
 end
 
 
@@ -233,7 +235,9 @@ forge.register_ore = function(name, eu_to_melt, yields)
 	table.insert(meltable_ores, name)
 	melt_yields[name] = y2
 	melt_total[name] = total
-	melt_energy_requirement[name] = eu_to_melt
+	melt_energy_requirement[name] = eu_to_melt * setting_melt_difficulty
+	
+	max_heat = math.max(max_heat, melt_energy_requirement[name] * 1.5) 
 end
 
 -- these numbers represent the proportions of the node, not the minetest-style chances
@@ -392,7 +396,7 @@ minetest.register_node(mn..":electrode_on", {
 
 -- technic.register_machine("LV", mn..":electrode", technic.receiver)
 -- technic.register_machine("LV", mn..":electrode_on", technic.receiver)
-technic.register_machine("LV", mn..":electrode", technic.battery)
+technic.register_machine("LV", mn..":electrode", technic.receiver)
 technic.register_machine("LV", mn..":electrode_on", technic.battery)
 
 

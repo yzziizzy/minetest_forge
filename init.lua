@@ -348,7 +348,7 @@ minetest.register_craft({
 
 local function set_electrode_demand(meta)
 	local machine_name = "Electrode"
- 	meta:set_int("LV_EU_demand", 20000)
+ 	meta:set_int("LV_EU_demand", 0)
 -- 	meta:set_int("LV_EU_demand", electrode_demand)
 	local input = meta:get_int("LV_EU_input")
 	if input ~= nil then

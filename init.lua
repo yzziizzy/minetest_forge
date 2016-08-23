@@ -49,7 +49,7 @@ minetest.register_node(mn..":slag", {
     description = "Slag",
     tiles = { "default_gravel.png^[colorize:brown:80" },
     is_ground_content = true,
-    groups = {cracky=1, cobble=1, refractory=1},
+    groups = {cracky=3, cobble=1, refractory=1},
     sounds = default.node_sound_stone_defaults(),
 }) 
 
@@ -69,7 +69,15 @@ minetest.register_node(mn..":refractory_brick", {
     description = "Refractory Brick",
     tiles = { "default_brick.png^[colorize:white:120" },
     is_ground_content = true,
-    groups = {cracky=3, refractory=3},
+    groups = {cracky=1, level=3, refractory=3},
+    sounds = default.node_sound_stone_defaults(),
+}) 
+
+minetest.register_node(mn..":furnace_heater", {
+    description = "Furnace Heater",
+    tiles = { "default_brick.png^[colorize:blue:120" },
+    is_ground_content = true,
+    groups = {cracky=1, level=3, refractory=3},
     sounds = default.node_sound_stone_defaults(),
 }) 
 
@@ -97,6 +105,17 @@ minetest.register_craft({
 	}
 })
 
+minetest.register_craft({
+	output = mn..':furnace_heater 1',
+	type = "shapeless",
+	recipe = { 
+		'default:furnace', 
+		mn..":refractory_clay_brick",
+		mn..":refractory_clay_brick",
+		mn..":refractory_clay_brick",
+		mn..":refractory_clay_brick",
+	}
+})
 
 minetest.register_craft({
 	type = "cooking",
@@ -195,7 +214,7 @@ function meltNear(pos, node)
 	end
 
 	heat = heat + input
-	
+	print(heat)
 	meta:set_string("infotext", "Electrode Active")
 	
 	local ore_nodes = minetest.find_nodes_in_area(
@@ -636,6 +655,11 @@ minetest.register_abm({
 	
 		-- don't cool near active electrodes
 		if nil ~= minetest.find_node_near(pos, 4, {mn..":electrode_on"}) then
+			return
+		end
+
+		-- don't cool near heater bricks
+		if nil ~= minetest.find_node_near(pos, 1, {mn..":furnace_heater"}) then
 			return
 		end
 		

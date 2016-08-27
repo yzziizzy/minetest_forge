@@ -688,6 +688,13 @@ minetest.register_abm({
 	end,
 })
 
+local function swap_nodes(pos1, node1, pos2, node2)
+	-- swap_node is faster than set_node, avoiding node destructors/constructors
+	-- also metadata is not reset, which two molten_ores don't have anyway
+	minetest.swap_node(pos1, node2 or minetest.get_node(pos2))
+	minetest.swap_node(pos2, node1 or minetest.get_node(pos1))
+end
+
 -- fluid dynamics
 minetest.register_abm({
 	nodenames = {"group:molten_ore"},
@@ -708,9 +715,7 @@ minetest.register_abm({
 		)
 
 		for _,fp in pairs(flow_nodes) do
-			local n = minetest.get_node(fp)
-			minetest.set_node(fp, node)
-			minetest.set_node(pos, n)
+			swap_nodes(pos, node, fp)
 			return
 		end
 
@@ -722,13 +727,11 @@ minetest.register_abm({
 		)
 
 		for _,fp in pairs(flow_nodes) do
-			local n = minetest.get_node(fp)
 			-- check above to make sure it can get here
 			local na = minetest.get_node({x=fp.x, y=fp.y+1, z=fp.z})
 			local g = minetest.get_item_group(na.name, "molten_ore")
 			if g > 0 then
-				minetest.set_node(fp, node)
-				minetest.set_node(pos, n)
+				swap_nodes(pos, node, fp)
 				return
 			end
 		end
@@ -741,8 +744,6 @@ minetest.register_abm({
 		)
 
 		for _,fp in pairs(flow_nodes) do
-			local n = minetest.get_node(fp)
-
 			-- check above
 			local na = minetest.get_node({x=fp.x, y=fp.y+1, z=fp.z})
 			local ga = minetest.get_item_group(na.name, "molten_ore")
@@ -753,9 +754,7 @@ minetest.register_abm({
 				local gb = minetest.get_item_group(nb.name, "molten_ore")
 
 				if gb > 0 then
-					--print("name: " .. na.name .. " l: " ..ga .. " bname: " .. nb.name .. " lb: " ..gb)
-					minetest.set_node(fp, node)
-					minetest.set_node(pos, n)
+					swap_nodes(pos, node, fp)
 					return
 				end
 			end
@@ -784,8 +783,7 @@ minetest.register_abm({
 			local dd = melt_densities[n.name]
 
 			if dd and sd and dd < sd then
-				minetest.set_node(fp, node)
-				minetest.set_node(pos, n)
+				swap_nodes(pos, node, fp, n)
 				return
 			end
 		end

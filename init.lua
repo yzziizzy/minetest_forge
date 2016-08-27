@@ -1,3 +1,8 @@
+local random, min, max = math.random, math.min, math.max
+local pairs, table = pairs, table
+local minetest, nodeupdate, vector = minetest, nodeupdate, vector
+local technic = technic
+
 local mn = "forge"
 
 local electrode_min_demand = 20
@@ -13,12 +18,12 @@ local melt_densities = {}
 local melt_energy_requirement = {}
 local molten_sources = {}
 
-function randomMelt(name)
+local function randomMelt(name)
 	if melt_total[name] == 0 or melt_total[name] == nil then
 		return mn..":molten_slag"
 	end
 
-	local r = math.random(melt_total[name])
+	local r = random(melt_total[name])
 
 	for k,v in pairs(melt_yields[name]) do
 		r = r - v
@@ -175,7 +180,7 @@ end
 
 local max_heat = 0
 
-function meltNear(pos, node)
+local function meltNear(pos, node)
 	local meta = minetest.get_meta(pos)
 	local input = meta:get_int("LV_EU_input")
 	local heat = meta:get_int("stored_eu")
@@ -196,7 +201,7 @@ function meltNear(pos, node)
 		meltable_ores
 	)
 
-	for _,p in ipairs(ore_nodes) do
+	for _,p in pairs(ore_nodes) do
 		local n = minetest.get_node(p)
 		local req = melt_energy_requirement[n.name]
 
@@ -210,7 +215,7 @@ function meltNear(pos, node)
 		minetest.set_node(p, {name=new})
 	end
 
-	meta:set_int("stored_eu", math.min(max_heat, heat))
+	meta:set_int("stored_eu", min(max_heat, heat))
 end
 
 function forge.register_ore(name, eu_to_melt, yields)
@@ -227,7 +232,7 @@ function forge.register_ore(name, eu_to_melt, yields)
 	melt_total[name] = total
 	melt_energy_requirement[name] = eu_to_melt * setting_melt_difficulty
 
-	max_heat = math.max(max_heat, melt_energy_requirement[name] * 1.5)
+	max_heat = max(max_heat, melt_energy_requirement[name] * 1.5)
 end
 
 -- these numbers represent the proportions of the node, not the minetest-style chances
@@ -629,7 +634,7 @@ minetest.register_abm({
 			-- melt cools 3 times more slowly over refractory materials
 			-- helps prevent clogs in structures
 			if 0 ~= minetest.get_item_group(below.name, "refractory") then
-				if math.random(3) >= 2 then
+				if random(3) >= 2 then
 					return
 				end
 			end
@@ -641,6 +646,25 @@ minetest.register_abm({
 			{pos = pos, max_hear_distance = 16, gain = 0.25})
 	end,
 })
+
+local function spawnSteam(pos)
+	pos.y = pos.y+1
+	minetest.add_particlespawner({
+		amount = 20,
+		time = 3,
+		minpos = vector.subtract(pos, 2 / 2),
+		maxpos = vector.add(pos, 2 / 2),
+		minvel = {x=-0.1, y=0, z=-0.1},
+		maxvel = {x=0.1,  y=0.5,  z=0.1},
+		minacc = {x=-0.1, y=0.1, z=-0.1},
+		maxacc = {x=0.1, y=0.3, z=0.1},
+		minexptime = 1,
+		maxexptime = 3,
+		minsize = 10,
+		maxsize = 20,
+		texture = mn.."_steam.png^[colorize:white:120",
+	})
+end
 
 -- water cooling
 minetest.register_abm({
@@ -669,25 +693,6 @@ minetest.register_abm({
 	end,
 })
 
-function spawnSteam(pos)
-	pos.y = pos.y+1
-	minetest.add_particlespawner({
-		amount = 20,
-		time = 3,
-		minpos = vector.subtract(pos, 2 / 2),
-		maxpos = vector.add(pos, 2 / 2),
-		minvel = {x=-0.1, y=0, z=-0.1},
-		maxvel = {x=0.1,  y=0.5,  z=0.1},
-		minacc = {x=-0.1, y=0.1, z=-0.1},
-		maxacc = {x=0.1, y=0.3, z=0.1},
-		minexptime = 1,
-		maxexptime = 3,
-		minsize = 10,
-		maxsize = 20,
-		texture = mn.."_steam.png^[colorize:white:120",
-	})
-end
-
 -- fluid dynamics
 minetest.register_abm({
 	nodenames = {"group:molten_ore"},
@@ -710,7 +715,7 @@ minetest.register_abm({
 			"group:molten_ore_flowing"
 		)
 
-		for _,fp in ipairs(flow_nodes) do
+		for _,fp in pairs(flow_nodes) do
 			local n = minetest.get_node(fp)
 			minetest.set_node(fp, {name=node.name})
 			minetest.set_node(pos, {name=n.name})
@@ -724,7 +729,7 @@ minetest.register_abm({
 			"group:molten_ore_flowing"
 		)
 
-		for _,fp in ipairs(flow_nodes) do
+		for _,fp in pairs(flow_nodes) do
 			local n = minetest.get_node(fp)
 			-- check above to make sure it can get here
 			local na = minetest.get_node({x=fp.x, y=fp.y+1, z=fp.z})
@@ -743,7 +748,7 @@ minetest.register_abm({
 			"group:molten_ore_flowing"
 		)
 
-		for _,fp in ipairs(flow_nodes) do
+		for _,fp in pairs(flow_nodes) do
 			local n = minetest.get_node(fp)
 
 			-- check above
@@ -784,7 +789,7 @@ minetest.register_abm({
 			"group:molten_ore_source"
 		)
 
-		for _,fp in ipairs(light_nodes) do
+		for _,fp in pairs(light_nodes) do
 			local n = minetest.get_node(fp)
 
 			local sd = melt_densities[node.name]
@@ -798,6 +803,19 @@ minetest.register_abm({
 		end
 	end,
 })
+
+local function try_replace(pos, flowing_node)
+	local n = minetest.get_node_or_nil(pos)
+	if n ~= nil then
+		if 0 == minetest.get_item_group(n.name, "refractory") then
+			if 0 == minetest.get_item_group(n.name, "molten_ore") then
+				minetest.set_node(pos, {name=flowing_node})
+				return true
+			end
+		end
+	end
+	return false
+end
 
 -- ore destroys things
 minetest.register_abm({
@@ -813,25 +831,12 @@ minetest.register_abm({
 		-- this only works if destruction is slower than cooling
 		local flowing_node = randomMelt(node.name)
 
-		local try_replace = function(p)
-			local n = minetest.get_node_or_nil(p)
-			if n ~= nil then
-				if 0 == minetest.get_item_group(n.name, "refractory") then
-					if 0 == minetest.get_item_group(n.name, "molten_ore") then
-						minetest.set_node(p, {name=flowing_node})
-						return true
-					end
-				end
-			end
-			return false
-		end
-
 		-- below
-		return (try_replace({x=pos.x    , y=pos.y - 1, z=pos.z    })
-			or try_replace({x=pos.x + 1, y=pos.y    , z=pos.z    })
-			or try_replace({x=pos.x    , y=pos.y    , z=pos.z + 1})
-			or try_replace({x=pos.x    , y=pos.y    , z=pos.z - 1})
-			or try_replace({x=pos.x - 1, y=pos.y    , z=pos.z    }))
+		return try_replace({x=pos.x    , y=pos.y - 1, z=pos.z    }, flowing_node)
+			or try_replace({x=pos.x + 1, y=pos.y    , z=pos.z    }, flowing_node)
+			or try_replace({x=pos.x    , y=pos.y    , z=pos.z + 1}, flowing_node)
+			or try_replace({x=pos.x    , y=pos.y    , z=pos.z - 1}, flowing_node)
+			or try_replace({x=pos.x - 1, y=pos.y    , z=pos.z    }, flowing_node)
 			-- above is not destroyed
 	end,
 })

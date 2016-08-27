@@ -605,12 +605,9 @@ minetest.register_abm({
 	nodenames = {"group:molten_ore"},
 	interval = 10,
 	chance = 15,
-	action = function(pos)
-		local node = minetest.get_node_or_nil(pos)
-
+	action = function(pos, node)
 		local cold = cools_to[node.name]
-
-		if node == nil or cold == nil then
+		if cold == nil then
 			return
 		end
 
@@ -677,11 +674,9 @@ minetest.register_abm({
 	},
 	interval = 2,
 	chance = 2,
-	action = function(pos)
-		local node = minetest.get_node_or_nil(pos)
+	action = function(pos, node)
 		local cold = cools_to[node.name]
-
-		if node == nil or cold == nil then
+		if cold == nil then
 			return
 		end
 
@@ -698,10 +693,7 @@ minetest.register_abm({
 	nodenames = {"group:molten_ore"},
 	interval = 1,
 	chance = 1,
-	action = function(pos)
-		local flow_nodes
-
-		local node = minetest.get_node(pos)
+	action = function(pos, node)
 		if minetest.get_item_group(node.name, "molten_ore") < 3 then
 			return
 		end
@@ -709,7 +701,7 @@ minetest.register_abm({
 		local flow_name = node.name.."_flowing"
 
 		-- look below
-		flow_nodes = minetest.find_nodes_in_area(
+		local flow_nodes = minetest.find_nodes_in_area(
 			{x=pos.x , y=pos.y - 1, z=pos.z},
 			{x=pos.x , y=pos.y - 1, z=pos.z},
 			"group:molten_ore_flowing"
@@ -717,8 +709,8 @@ minetest.register_abm({
 
 		for _,fp in pairs(flow_nodes) do
 			local n = minetest.get_node(fp)
-			minetest.set_node(fp, {name=node.name})
-			minetest.set_node(pos, {name=n.name})
+			minetest.set_node(fp, node)
+			minetest.set_node(pos, n)
 			return
 		end
 
@@ -735,8 +727,8 @@ minetest.register_abm({
 			local na = minetest.get_node({x=fp.x, y=fp.y+1, z=fp.z})
 			local g = minetest.get_item_group(na.name, "molten_ore")
 			if g > 0 then
-				minetest.set_node(fp, {name=node.name})
-				minetest.set_node(pos, {name=n.name})
+				minetest.set_node(fp, node)
+				minetest.set_node(pos, n)
 				return
 			end
 		end
@@ -762,8 +754,8 @@ minetest.register_abm({
 
 				if gb > 0 then
 					--print("name: " .. na.name .. " l: " ..ga .. " bname: " .. nb.name .. " lb: " ..gb)
-					minetest.set_node(fp, {name=node.name})
-					minetest.set_node(pos, {name=n.name})
+					minetest.set_node(fp, node)
+					minetest.set_node(pos, n)
 					return
 				end
 			end
@@ -777,13 +769,9 @@ minetest.register_abm({
 	neightbors = {"group:molten_ore_source"},
 	interval = 4,
 	chance = 2,
-	action = function(pos)
-		local light_nodes
-
-		local node = minetest.get_node(pos)
-
+	action = function(pos, node)
 		-- look one node out
-		light_nodes = minetest.find_nodes_in_area(
+		local light_nodes = minetest.find_nodes_in_area(
 			{x=pos.x - 1, y=pos.y - 1, z=pos.z - 1},
 			{x=pos.x + 1, y=pos.y - 1, z=pos.z + 1},
 			"group:molten_ore_source"
@@ -796,8 +784,8 @@ minetest.register_abm({
 			local dd = melt_densities[n.name]
 
 			if dd and sd and dd < sd then
-				minetest.set_node(fp, {name=node.name})
-				minetest.set_node(pos, {name=n.name})
+				minetest.set_node(fp, node)
+				minetest.set_node(pos, n)
 				return
 			end
 		end
@@ -822,12 +810,7 @@ minetest.register_abm({
 	nodenames = {"group:molten_ore_source"},
 	interval = 5,
 	chance = 40,
-	action = function(pos)
-		local node = minetest.get_node_or_nil(pos)
-		if 0 == minetest.get_item_group(node.name, "molten_ore_source") then
-			return
-		end
-
+	action = function(pos, node)
 		-- this only works if destruction is slower than cooling
 		local flowing_node = randomMelt(node.name)
 

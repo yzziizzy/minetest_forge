@@ -1,5 +1,3 @@
- 
-
 local mn = "forge"
 
 local electrode_min_demand = 20
@@ -7,33 +5,30 @@ local setting_melt_difficulty = 10
 
 local forge = {}
 
-
 local melt_total = {}
 local melt_yields = {}
-local meltable_ores = {} 
+local meltable_ores = {}
 local cools_to = {}
 local melt_densities = {}
 local melt_energy_requirement = {}
 local molten_sources = {}
 
-
-function randomMelt(name) 
+function randomMelt(name)
 	if melt_total[name] == 0 or melt_total[name] == nil then
 		return mn..":molten_slag"
 	end
-	
+
 	local r = math.random(melt_total[name])
-	
+
 	for k,v in pairs(melt_yields[name]) do
 		r = r - v
 		if r <= 0 then
 			return mn..":molten_"..k
 		end
 	end
-	
+
 	return mn..":molten_slag"
 end
-
 
 minetest.register_craftitem(mn..":refractory_clay_lump", {
 	description = "Refractory Clay",
@@ -46,70 +41,58 @@ minetest.register_craftitem(mn..":refractory_clay_brick", {
 })
 
 minetest.register_node(mn..":slag", {
-    description = "Slag",
-    tiles = { "default_gravel.png^[colorize:brown:80" },
-    is_ground_content = true,
-    groups = {cracky=3, cobble=1, refractory=1},
-    sounds = default.node_sound_stone_defaults(),
-}) 
-
---[[
-minetest.register_node(mn..":hot_steelblock", {
-	description = "Hot Steel Block",
-	tiles = {"default_steel_block.png^[colorize:red:120"},
-	is_ground_content = false,
-	light_source = 3,
-	groups = {cracky = 1, falling_node = 1, level = 2, hot = 3, igniter = 1},
+	description = "Slag",
+	tiles = { "default_gravel.png^[colorize:brown:80" },
+	is_ground_content = true,
+	groups = {cracky=3, cobble=1, refractory=1},
 	sounds = default.node_sound_stone_defaults(),
 })
-]]
-
 
 minetest.register_node(mn..":refractory_brick", {
-    description = "Refractory Brick",
-    tiles = { "default_brick.png^[colorize:white:120" },
-    is_ground_content = true,
-    groups = {cracky=1, level=3, refractory=3},
-    sounds = default.node_sound_stone_defaults(),
-}) 
+	description = "Refractory Brick",
+	tiles = { "default_brick.png^[colorize:white:120" },
+	is_ground_content = true,
+	groups = {cracky=1, level=3, refractory=3},
+	sounds = default.node_sound_stone_defaults(),
+})
 
 minetest.register_node(mn..":furnace_heater", {
-    description = "Furnace Heater",
-    tiles = { "default_brick.png^[colorize:blue:120" },
-    is_ground_content = true,
-    groups = {cracky=1, level=3, refractory=3},
-    sounds = default.node_sound_stone_defaults(),
-}) 
+	description = "Furnace Heater",
+	tiles = { "default_brick.png^[colorize:blue:120" },
+	is_ground_content = true,
+	groups = {cracky=1, level=3, refractory=3},
+	sounds = default.node_sound_stone_defaults(),
+})
 
 minetest.register_craft({
 	output = mn..':refractory_clay_lump 6',
 	type = "shapeless",
 	recipe = {
-		'default:desert_sand', 
-		'default:sand', 
-		'default:clay_lump', 
-		'default:clay_lump', 
-		'default:clay_lump', 
-		'default:clay_lump', 
+		'default:desert_sand',
+		'default:sand',
+		'default:clay_lump',
+		'default:clay_lump',
+		'default:clay_lump',
+		'default:clay_lump',
 	}
 })
 
 minetest.register_craft({
 	output = mn..':refractory_clay_lump 4',
 	type = "shapeless",
-	recipe = { 
-		mn..':slag', 
-		mn..':slag', 
-		'default:clay_lump', 
-		'default:clay_lump', 
+	recipe = {
+		mn..':slag',
+		mn..':slag',
+		'default:clay_lump',
+		'default:clay_lump',
 	}
 })
 
 minetest.register_craft({
 	output = mn..':furnace_heater 1',
 	type = "shapeless",
-	recipe = { 
-		'default:furnace', 
+	recipe = {
+		'default:furnace',
 		mn..":refractory_clay_brick",
 		mn..":refractory_clay_brick",
 		mn..":refractory_clay_brick",
@@ -131,17 +114,15 @@ minetest.register_craft({
 	}
 })
 
-
-
 --[[
 minetest.register_node(mn..":crucible_spout", {
-    description = "Crucible Spout",
-    drawtype="nodebox",
+	description = "Crucible Spout",
+	drawtype="nodebox",
 	tiles = { "default_stone.png" },
-    is_ground_content = true,
-    groups = {cracky=3, stone=1, refractory=3},
+	is_ground_content = true,
+	groups = {cracky=3, stone=1, refractory=3},
 	paramtype = "light",
-    sounds = default.node_sound_stone_defaults(),
+	sounds = default.node_sound_stone_defaults(),
 	node_box = {
 		type = "fixed",
 		fixed = {
@@ -153,11 +134,8 @@ minetest.register_node(mn..":crucible_spout", {
 	},
 	on_punch = function (pos, node)
 		spoutPour(pos)
-		
-		
 	end
 }) 
-
 
 function spoutPour(pos) 
 	local ore_nodes = minetest.find_nodes_in_area(
@@ -165,84 +143,77 @@ function spoutPour(pos)
 		{x=pos.x + 2, y=pos.y + 4, z=pos.z + 2},
 		mn..":molten_ore"
 	)
-	
+
 	if ore_nodes == nil then 
 		return
 	end
-	
+
 	local i = 0
 	local tmp = {}
-	
+
 	for _,p in ipairs(ore_nodes) do
-		
+
 		i = i + 1
-		
+
 		table.insert(tmp, p)
-		
+
 		if i >= 4 then
 			for _,p2 in ipairs(tmp) do
 				minetest.set_node(p2, {name=mn..":molten_slag"})
 			end
-			
+
 			minetest.set_node({x=pos.x, y=pos.y - 2, z=pos.z}, {name=mn..":hot_steelblock"})
-			
+
 			nodeupdate({x=pos.x, y=pos.y - 2, z=pos.z} )
 			i = 0
 			tmp = {}
-			
 			return
 		end
 	end
-	
-	
 end
-
 ]]
 
-local max_heat = 0;
+local max_heat = 0
 
-function meltNear(pos, node) 
-	
+function meltNear(pos, node)
 	local meta = minetest.get_meta(pos)
 	local input = meta:get_int("LV_EU_input")
 	local heat = meta:get_int("stored_eu")
 	local current_charge = meta:get_int("internal_EU_charge")
-	
-	if false and input < electrode_min_demand then 
+
+	if false and input < electrode_min_demand then
 		meta:set_string("infotext", "Electrode Unpowered")
 		return
 	end
 
 	heat = heat + input
-	print(heat)
+
 	meta:set_string("infotext", "Electrode Active")
-	
+
 	local ore_nodes = minetest.find_nodes_in_area(
 		{x=pos.x - 3, y=pos.y - 6,z=pos.z - 3},
 		{x=pos.x + 3, y=pos.y, z=pos.z + 3},
 		meltable_ores
 	)
-	
+
 	for _,p in ipairs(ore_nodes) do
 		local n = minetest.get_node(p)
 		local req = melt_energy_requirement[n.name]
-		
+
 		if heat < req then
 			break
 		end
-		
+
 		heat = heat - req
-		
+
 		local new = randomMelt(n.name)
 		minetest.set_node(p, {name=new})
 	end
-	
-	meta:set_int("stored_eu", math.min(max_heat, heat)
-)
+
+	meta:set_int("stored_eu", math.min(max_heat, heat))
 end
 
-
-forge.register_ore = function(name, eu_to_melt, yields)
+function forge.register_ore(name, eu_to_melt, yields)
 	local y2 = {}
 	local total = 0
 
@@ -250,13 +221,13 @@ forge.register_ore = function(name, eu_to_melt, yields)
 		total = total + v
 		y2[k] = v
 	end
-	
+
 	table.insert(meltable_ores, name)
 	melt_yields[name] = y2
 	melt_total[name] = total
 	melt_energy_requirement[name] = eu_to_melt * setting_melt_difficulty
-	
-	max_heat = math.max(max_heat, melt_energy_requirement[name] * 1.5) 
+
+	max_heat = math.max(max_heat, melt_energy_requirement[name] * 1.5)
 end
 
 -- these numbers represent the proportions of the node, not the minetest-style chances
@@ -326,7 +297,6 @@ forge.register_ore("technic:carbon_steel_block", 200, {steel = 1})
 forge.register_ore("technic:cast_iron_block", 200, {steel = 1})
 forge.register_ore("default:glass", 200, {glass = 1})
 
-
 minetest.register_node(mn..":electrode", {
 	description = "Electrode",
 	drawtype = "nodebox",
@@ -352,7 +322,7 @@ minetest.register_node(mn..":electrode", {
 		meta:set_int("active", 0)
 		meta:set_string("power_flag", "LV")
 		meta:get_int("stored_eu", 0)
-		meta:set_int("LV_EU_demand", 0)	
+		meta:set_int("LV_EU_demand", 0)
 	end,
 })
 
@@ -367,8 +337,8 @@ minetest.register_craft({
 
 local function set_electrode_demand(meta)
 	local machine_name = "Electrode"
- 	meta:set_int("LV_EU_demand", 10000000)
--- 	meta:set_int("LV_EU_demand", electrode_demand)
+	meta:set_int("LV_EU_demand", 10000000)
+	-- meta:set_int("LV_EU_demand", electrode_demand)
 	local input = meta:get_int("LV_EU_input")
 	if input ~= nil then
 		meta:set_string("infotext", (input > 0 and "%s Active" or "%s Unpowered"):format(machine_name))
@@ -376,7 +346,6 @@ local function set_electrode_demand(meta)
 		meta:set_string("infotext", machine_name.. " has no network.")
 	end
 end
-
 
 minetest.register_node(mn..":electrode_on", {
 	description = "Electrode",
@@ -396,10 +365,7 @@ minetest.register_node(mn..":electrode_on", {
 		},
 	},
 	on_punch = function (pos, node)
-		
 		minetest.set_node(pos, {name=mn..":electrode"})
-		
-		
 	end,
 	on_construct = function(pos)
 		local meta = minetest.get_meta(pos)
@@ -418,19 +384,12 @@ minetest.register_node(mn..":electrode_on", {
 technic.register_machine("LV", mn..":electrode", technic.receiver)
 technic.register_machine("LV", mn..":electrode_on", technic.battery)
 
-
-
-
-
-
 -- registers the molten liquids and densities
-forge.register_metal = function(opts) 
-
-	cools_to[mn..":molten_"..opts.name] = opts.cools 
-	melt_densities[mn..":molten_"..opts.name] = opts.density 
+function forge.register_metal(opts)
+	cools_to[mn..":molten_"..opts.name] = opts.cools
+	melt_densities[mn..":molten_"..opts.name] = opts.density
 	table.insert(molten_sources, mn..":molten_"..opts.name)
-	
-	
+
 	minetest.register_node(mn..":molten_"..opts.name, {
 		description = "Molten " .. opts.Name,
 		inventory_image = minetest.inventorycube("default_lava.png"),
@@ -479,8 +438,6 @@ forge.register_metal = function(opts)
 		groups = {lava = 2, liquid = 2, hot = 3, igniter = 1, molten_ore=3, molten_ore_source=1},
 	})
 
-
-
 	minetest.register_node(mn..":molten_"..opts.name.."_flowing", {
 		description = "Molten "..opts.Name,
 		inventory_image = minetest.inventorycube("default_lava.png"),
@@ -526,14 +483,13 @@ forge.register_metal = function(opts)
 		liquid_range = 2,
 		damage_per_second = 1 * 2,
 		post_effect_color = {a = 192, r = 255, g = 64, b = 0},
-		groups = {lava = 2, liquid = 2, hot = 3, igniter = 1, molten_ore=1, molten_ore_flowing=1,
-			not_in_creative_inventory = 1},
+		groups = {
+			lava = 2, liquid = 2, hot = 3, igniter = 1,
+			molten_ore=1, molten_ore_flowing=1,
+			not_in_creative_inventory = 1
+		},
 	})
-
 end -- forge.register_metal
-
-
-
 
 forge.register_metal({
 	name="steel",
@@ -541,7 +497,7 @@ forge.register_metal({
 	cools="default:steelblock",
 	density=10,
 })
-	
+
 forge.register_metal({
 	name="copper",
 	Name="Copper",
@@ -631,7 +587,7 @@ forge.register_metal({
 	cools="default:glass",
 	density=3,
 })
-	
+
 forge.register_metal({
 	name="slag",
 	Name="Slag",
@@ -646,13 +602,13 @@ minetest.register_abm({
 	chance = 15,
 	action = function(pos)
 		local node = minetest.get_node_or_nil(pos)
-	
+
 		local cold = cools_to[node.name]
-		
-		if node == nil or cold == nil then 
-			return 
+
+		if node == nil or cold == nil then
+			return
 		end
-	
+
 		-- don't cool near active electrodes
 		if nil ~= minetest.find_node_near(pos, 4, {mn..":electrode_on"}) then
 			return
@@ -662,14 +618,14 @@ minetest.register_abm({
 		if nil ~= minetest.find_node_near(pos, 1, {mn..":furnace_heater"}) then
 			return
 		end
-		
+
 		-- let ore fall before cooling
 		local below = minetest.get_node_or_nil({x=pos.x, y=pos.y-1, z=pos.z})
 		if below then
 			if 0 ~= minetest.get_item_group(below.name, "molten_ore_flowing") then
 				return
 			end
-			
+
 			-- melt cools 3 times more slowly over refractory materials
 			-- helps prevent clogs in structures
 			if 0 ~= minetest.get_item_group(below.name, "refractory") then
@@ -678,9 +634,7 @@ minetest.register_abm({
 				end
 			end
 		end
-		
-		
-		
+
 		minetest.set_node(pos, {name = cold})
 		nodeupdate(pos)
 		minetest.sound_play("default_cool_lava",
@@ -688,14 +642,13 @@ minetest.register_abm({
 	end,
 })
 
-
 -- water cooling
 minetest.register_abm({
 	nodenames = {"group:molten_ore"},
 	neighbors = {
-		"default:water_source", 
-		"default:water_flowing", 
-		"default:river_water_source", 
+		"default:water_source",
+		"default:water_flowing",
+		"default:river_water_source",
 		"default:river_water_flowing"
 	},
 	interval = 2,
@@ -703,11 +656,11 @@ minetest.register_abm({
 	action = function(pos)
 		local node = minetest.get_node_or_nil(pos)
 		local cold = cools_to[node.name]
-		
-		if node == nil or cold == nil then 
-			return 
+
+		if node == nil or cold == nil then
+			return
 		end
-		
+
 		minetest.set_node(pos, {name = cold})
 		nodeupdate(pos)
 		spawnSteam(pos)
@@ -716,8 +669,7 @@ minetest.register_abm({
 	end,
 })
 
-
-function spawnSteam(pos) 
+function spawnSteam(pos)
 	pos.y = pos.y+1
 	minetest.add_particlespawner({
 		amount = 20,
@@ -734,20 +686,7 @@ function spawnSteam(pos)
 		maxsize = 20,
 		texture = mn.."_steam.png^[colorize:white:120",
 	})
-	
 end
---[[
-minetest.register_abm({
-	nodenames = {mn..":hot_steelblock"},
-	interval = 10,
-	chance = 2,
-	action = function(pos)
-		minetest.set_node(pos, {name = "default:steelblock"})
-	end,
-})
-]]
-
-
 
 -- fluid dynamics
 minetest.register_abm({
@@ -755,71 +694,69 @@ minetest.register_abm({
 	interval = 1,
 	chance = 1,
 	action = function(pos)
-		local flow_nodes;
+		local flow_nodes
 
 		local node = minetest.get_node(pos)
 		if minetest.get_item_group(node.name, "molten_ore") < 3 then
 			return
 		end
-		
-		local flow_name = node.name.."_flowing" 
-		
+
+		local flow_name = node.name.."_flowing"
+
 		-- look below
 		flow_nodes = minetest.find_nodes_in_area(
 			{x=pos.x , y=pos.y - 1, z=pos.z},
 			{x=pos.x , y=pos.y - 1, z=pos.z},
 			"group:molten_ore_flowing"
 		)
-		
+
 		for _,fp in ipairs(flow_nodes) do
-			local n = minetest.get_node(fp);
+			local n = minetest.get_node(fp)
 			minetest.set_node(fp, {name=node.name})
 			minetest.set_node(pos, {name=n.name})
 			return
-		end	
-		
+		end
+
 		-- look one node out
 		flow_nodes = minetest.find_nodes_in_area(
 			{x=pos.x - 1, y=pos.y - 1, z=pos.z - 1},
 			{x=pos.x + 1, y=pos.y - 1, z=pos.z + 1},
 			"group:molten_ore_flowing"
 		)
-		
+
 		for _,fp in ipairs(flow_nodes) do
-			local n = minetest.get_node(fp);
+			local n = minetest.get_node(fp)
 			-- check above to make sure it can get here
 			local na = minetest.get_node({x=fp.x, y=fp.y+1, z=fp.z})
 			local g = minetest.get_item_group(na.name, "molten_ore")
-	--		print("name: " .. na.name .. " l: " ..g)
 			if g > 0 then
 				minetest.set_node(fp, {name=node.name})
 				minetest.set_node(pos, {name=n.name})
 				return
 			end
 		end
-	
-		
+
 		-- look two nodes out
 		flow_nodes = minetest.find_nodes_in_area(
 			{x=pos.x - 2, y=pos.y - 1, z=pos.z - 2},
 			{x=pos.x + 2, y=pos.y - 1, z=pos.z + 2},
 			"group:molten_ore_flowing"
 		)
-		
+
 		for _,fp in ipairs(flow_nodes) do
-			local n = minetest.get_node(fp);
-			
+			local n = minetest.get_node(fp)
+
 			-- check above
 			local na = minetest.get_node({x=fp.x, y=fp.y+1, z=fp.z})
 			local ga = minetest.get_item_group(na.name, "molten_ore")
-			
+
 			if ga > 0 then
 				-- check between above and node
 				local nb = minetest.get_node({x=(fp.x + pos.x) / 2, y=pos.y, z=(fp.z + pos.z) / 2})
 				local gb = minetest.get_item_group(nb.name, "molten_ore")
-				
+
 				if gb > 0 then
-				--print("name: " .. na.name .. " l: " ..ga .. " bname: " .. nb.name .. " lb: " ..gb)
+					--print("name: " .. na.name .. " l: " ..ga .. " bname: " .. nb.name .. " lb: " ..gb)
 					minetest.set_node(fp, {name=node.name})
 					minetest.set_node(pos, {name=n.name})
 					return
@@ -829,7 +766,6 @@ minetest.register_abm({
 	end,
 })
 
-
 -- dense metals sink to the bottom
 minetest.register_abm({
 	nodenames = {"group:molten_ore_source"},
@@ -837,7 +773,7 @@ minetest.register_abm({
 	interval = 4,
 	chance = 2,
 	action = function(pos)
-		local light_nodes;
+		local light_nodes
 
 		local node = minetest.get_node(pos)
 
@@ -847,44 +783,40 @@ minetest.register_abm({
 			{x=pos.x + 1, y=pos.y - 1, z=pos.z + 1},
 			"group:molten_ore_source"
 		)
-		
+
 		for _,fp in ipairs(light_nodes) do
-			local n = minetest.get_node(fp);
-			
+			local n = minetest.get_node(fp)
+
 			local sd = melt_densities[node.name]
 			local dd = melt_densities[n.name]
-			
+
 			if dd and sd and dd < sd then
 				minetest.set_node(fp, {name=node.name})
 				minetest.set_node(pos, {name=n.name})
 				return
 			end
-		
 		end
-	
 	end,
 })
-
-
 
 -- ore destroys things
 minetest.register_abm({
 	nodenames = {"group:molten_ore_source"},
 	interval = 5,
- 	chance = 40,
+	chance = 40,
 	action = function(pos)
 		local node = minetest.get_node_or_nil(pos)
 		if 0 == minetest.get_item_group(node.name, "molten_ore_source") then
 			return
 		end
-		
+
 		-- this only works if destruction is slower than cooling
-		local flowing_node = randomMelt(node.name) 
-		
+		local flowing_node = randomMelt(node.name)
+
 		local try_replace = function(p)
 			local n = minetest.get_node_or_nil(p)
 			if n ~= nil then
-				if 0 == minetest.get_item_group(n.name, "refractory") then 
+				if 0 == minetest.get_item_group(n.name, "refractory") then
 					if 0 == minetest.get_item_group(n.name, "molten_ore") then
 						minetest.set_node(p, {name=flowing_node})
 						return true
@@ -893,15 +825,14 @@ minetest.register_abm({
 			end
 			return false
 		end
-		
+
 		-- below
 		return (try_replace({x=pos.x    , y=pos.y - 1, z=pos.z    })
-		or try_replace({x=pos.x + 1, y=pos.y    , z=pos.z    })
-		or try_replace({x=pos.x    , y=pos.y    , z=pos.z + 1})
-		or try_replace({x=pos.x    , y=pos.y    , z=pos.z - 1})
-		or try_replace({x=pos.x - 1, y=pos.y    , z=pos.z    }))
-		
-		-- above is not destroyed
+			or try_replace({x=pos.x + 1, y=pos.y    , z=pos.z    })
+			or try_replace({x=pos.x    , y=pos.y    , z=pos.z + 1})
+			or try_replace({x=pos.x    , y=pos.y    , z=pos.z - 1})
+			or try_replace({x=pos.x - 1, y=pos.y    , z=pos.z    }))
+			-- above is not destroyed
 	end,
 })
 

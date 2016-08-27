@@ -382,6 +382,7 @@ minetest.register_node(mn..":electrode_on", {
 		set_electrode_demand(meta)
 	end,
 	technic_run = meltNear,
+	drop = mn..":electrode",
 })
 
 -- technic.register_machine("LV", mn..":electrode", technic.receiver)

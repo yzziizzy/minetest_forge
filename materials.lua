@@ -59,6 +59,7 @@ forge.register_ore("technic:lead_block", 60, {lead = 1})
 forge.register_ore("technic:stainless_steel_block", 200, {stainless_steel = 1})
 forge.register_ore("technic:carbon_steel_block", 200, {steel = 1})
 forge.register_ore("technic:cast_iron_block", 200, {steel = 1})
+forge.register_ore("technic:brass_block", 200, {brass = 1})
 forge.register_ore("default:glass", 200, {glass = 1})
 
 forge.register_metal({

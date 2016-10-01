@@ -1,15 +1,4 @@
 local forge = ...
-local modname = minetest.get_current_modname()
-
-minetest.register_node(modname..":slag", {
-	description = "Slag",
-	tiles = { "default_gravel.png^[colorize:brown:80" },
-	is_ground_content = true,
-	groups = {cracky=3, cobble=1, refractory=1},
-	sounds = default.node_sound_stone_defaults(),
-})
-
---------------------------------------------------------------------------------
 
 -- these numbers represent the proportions of the node, not the minetest-style chances
 forge.register_ore("default:desert_cobble", 400, {
@@ -55,13 +44,6 @@ forge.register_ore("default:sand", 350, {
 forge.register_ore("default:sandstone", 370, {
 	glass = 10,
 	slag = 1,
-})
-
-forge.register_ore(modname..":slag", 600, {
-	steel = 1,
-	copper = 1,
-	glass = 1,
-	slag = 1000,
 })
 
 -- remelting
@@ -173,12 +155,5 @@ forge.register_metal({
 	name="glass",
 	Name="Glass",
 	cools="default:glass",
-	density=3,
-})
-
-forge.register_metal({
-	name="slag",
-	Name="Slag",
-	cools=modname..":slag",
 	density=3,
 })

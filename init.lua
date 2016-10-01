@@ -163,6 +163,7 @@ function forge.register_metal(opts)
 	})
 end -- forge.register_metal
 
+assert(loadfile(modpath .. "/slag.lua"))(forge)
 assert(loadfile(modpath .. "/materials.lua"))(forge)
 assert(loadfile(modpath .. "/physics.lua"))(cools_to, melt_densities, random_melt_product)
 assert(loadfile(modpath .. "/electrode.lua"))(forge, melt_energy_requirement, meltable_ores, random_melt_product)

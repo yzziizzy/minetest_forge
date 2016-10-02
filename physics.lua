@@ -4,6 +4,12 @@ local random, pairs = math.random, pairs
 
 local cools_to, melt_densities, random_melt_product = ...
 
+local function melt(pos, node)
+	local node_name = node and node.name or minetest.get_node(pos).name
+	minetest.set_node(pos, {name=random_melt_product(node_name)})
+	return true
+end
+
 local function swap_nodes(pos1, node1, pos2, node2)
 	-- swap_node is faster than set_node, avoiding node destructors/constructors
 	-- also metadata is not reset, which two molten_ores don't have anyway
@@ -194,12 +200,12 @@ minetest.register_abm({
 	end,
 })
 
-local function try_replace(pos, flowing_node)
-	local n = minetest.get_node_or_nil(pos)
-	if n ~= nil then
-		if 0 == minetest.get_item_group(n.name, "refractory") then
-			if 0 == minetest.get_item_group(n.name, "molten_ore") then
-				minetest.set_node(pos, {name=flowing_node})
+local function try_melt(pos)
+	local node = minetest.get_node_or_nil(pos)
+	if node then
+		if 0 == minetest.get_item_group(node.name, "refractory") then
+			if 0 == minetest.get_item_group(node.name, "molten_ore") then
+				melt(pos, node)
 				return true
 			end
 		end
@@ -211,17 +217,14 @@ local heat_conduct_dirs = {
 	{1, 0}, {-1, 0}, {0, 1}, {0, -1},
 }
 
---- ore destroys things
+-- molten ore conducts heat, either remelting other things or destroying them
 minetest.register_abm({
 	nodenames = {"group:molten_ore_source"},
 	interval = 5,
 	chance = 40,
 	action = function(pos, node)
-		-- this only works if destruction is slower than cooling
-		local flowing_node = random_melt_product(node.name)
-
 		-- prefer the node below
-		if try_replace({x=pos.x, y=pos.y - 1, z=pos.z }, flowing_node) then
+		if try_melt({x=pos.x, y=pos.y - 1, z=pos.z }) then
 			return
 		end
 
@@ -229,7 +232,7 @@ minetest.register_abm({
 		local start = random(4)
 		for i=0, 3 do
 			local dir = heat_conduct_dirs[(start + i) % 4 + 1]
-			if try_replace({x=pos.x + dir[1], y=pos.y, z=pos.z + dir[2]}, flowing_node) then
+			if try_melt({x=pos.x + dir[1], y=pos.y, z=pos.z + dir[2]}) then
 				return
 			end
 		end

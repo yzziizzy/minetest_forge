@@ -100,7 +100,10 @@ minetest.register_node(modname..":electrode_on", {
 	paramtype2 = "facedir",
 	is_ground_content = false,
 	connect_sides = {"top"},
-	groups = {cracky=3, refractory=1, technic_machine=1, technic_lv=1},
+	groups = {
+		cracky=3, refractory=1, technic_machine=1, technic_lv=1,
+		not_in_creative_inventory = 1,
+	},
 	node_box = {
 		type = "fixed",
 		fixed = {

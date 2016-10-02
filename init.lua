@@ -107,7 +107,10 @@ function forge.register_metal(opts)
 		liquid_range = 2,
 		damage_per_second = 2 * 2,
 		post_effect_color = {a = 192, r = 255, g = 64, b = 0},
-		groups = {lava = 2, liquid = 2, hot = 3, igniter = 1, molten_ore=3, molten_ore_source=1},
+		groups = {
+			lava = 2, liquid = 2, hot = 3, igniter = 1, not_in_creative_inventory = 1,
+			molten_ore=3, molten_ore_source=1,
+		},
 	})
 
 	minetest.register_node(modname..":molten_"..opts.name.."_flowing", {

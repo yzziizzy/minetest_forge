@@ -207,7 +207,11 @@ local function try_replace(pos, flowing_node)
 	return false
 end
 
--- ore destroys things
+local heat_conduct_dirs = {
+	{1, 0}, {-1, 0}, {0, 1}, {0, -1},
+}
+
+--- ore destroys things
 minetest.register_abm({
 	nodenames = {"group:molten_ore_source"},
 	interval = 5,
@@ -216,12 +220,19 @@ minetest.register_abm({
 		-- this only works if destruction is slower than cooling
 		local flowing_node = random_melt_product(node.name)
 
-		-- below
-		return try_replace({x=pos.x    , y=pos.y - 1, z=pos.z    }, flowing_node)
-			or try_replace({x=pos.x + 1, y=pos.y    , z=pos.z    }, flowing_node)
-			or try_replace({x=pos.x    , y=pos.y    , z=pos.z + 1}, flowing_node)
-			or try_replace({x=pos.x    , y=pos.y    , z=pos.z - 1}, flowing_node)
-			or try_replace({x=pos.x - 1, y=pos.y    , z=pos.z    }, flowing_node)
-			-- above is not destroyed
+		-- prefer the node below
+		if try_replace({x=pos.x, y=pos.y - 1, z=pos.z }, flowing_node) then
+			return
+		end
+
+		-- then start with a random direction and rotate
+		local start = random(4)
+		for i=0, 3 do
+			local dir = heat_conduct_dirs[(start + i) % 4 + 1]
+			if try_replace({x=pos.x + dir[1], y=pos.y, z=pos.z + dir[2]}, flowing_node) then
+				return
+			end
+		end
+		-- above is not destroyed
 	end,
 })

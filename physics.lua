@@ -10,6 +10,18 @@ local function melt(pos, node)
 	return true
 end
 
+local function cool_down(pos, node)
+	local node_name = node and node.name or minetest.get_node(pos).name
+	local cold_name = cools_to[node_name]
+	if not cold_name then
+		return false
+	end
+
+	minetest.set_node(pos, {name = cold_name})
+	nodeupdate(pos)
+	return true
+end
+
 local function swap_nodes(pos1, node1, pos2, node2)
 	-- swap_node is faster than set_node, avoiding node destructors/constructors
 	-- also metadata is not reset, which two molten_ores don't have anyway
@@ -112,24 +124,26 @@ minetest.register_abm({
 	end,
 })
 
+local function is_heated(pos, node)
+	-- don't cool near active electrodes
+	if minetest.find_node_near(pos, 4, {modname..":electrode_on"}) then
+		return true
+	end
+
+	-- don't cool near heater bricks
+	if minetest.find_node_near(pos, 1, {modname..":furnace_heater"}) then
+		return true
+	end
+	return false
+end
+
 -- air cooling
 minetest.register_abm({
 	nodenames = {"group:molten_ore"},
 	interval = 10,
 	chance = 15,
 	action = function(pos, node)
-		local cold = cools_to[node.name]
-		if cold == nil then
-			return
-		end
-
-		-- don't cool near active electrodes
-		if nil ~= minetest.find_node_near(pos, 4, {modname..":electrode_on"}) then
-			return
-		end
-
-		-- don't cool near heater bricks
-		if nil ~= minetest.find_node_near(pos, 1, {modname..":furnace_heater"}) then
+		if is_heated(pos, node) then
 			return
 		end
 
@@ -149,10 +163,10 @@ minetest.register_abm({
 			end
 		end
 
-		minetest.set_node(pos, {name = cold})
-		nodeupdate(pos)
-		minetest.sound_play("default_cool_lava",
-			{pos = pos, max_hear_distance = 16, gain = 0.25})
+		if cool_down(pos, node) then
+			minetest.sound_play("default_cool_lava",
+				{pos = pos, max_hear_distance = 16, gain = 0.25})
+		end
 	end,
 })
 
@@ -187,28 +201,27 @@ minetest.register_abm({
 	interval = 2,
 	chance = 2,
 	action = function(pos, node)
-		local cold = cools_to[node.name]
-		if cold == nil then
-			return
+		if cool_down(pos, node) then
+			spawnSteam(pos)
+			minetest.sound_play("default_cool_lava",
+				{pos = pos, max_hear_distance = 16, gain = 0.25})
 		end
-
-		minetest.set_node(pos, {name = cold})
-		nodeupdate(pos)
-		spawnSteam(pos)
-		minetest.sound_play("default_cool_lava",
-			{pos = pos, max_hear_distance = 16, gain = 0.25})
 	end,
 })
 
-local function try_melt(pos)
+local function try_conduct(pos, node)
 	local node = minetest.get_node_or_nil(pos)
-	if node then
-		if 0 == minetest.get_item_group(node.name, "refractory") then
-			if 0 == minetest.get_item_group(node.name, "molten_ore") then
-				melt(pos, node)
-				return true
-			end
+	if node and 0 == minetest.get_item_group(node.name, "refractory") and
+				0 == minetest.get_item_group(node.name, "molten_ore") then
+		melt(pos, node)
+
+		-- avoid conduction loops around heaters
+		if not is_heated(pos, node) then
+			-- but conserve energy if possible, which also protects from
+			-- melting entire mountains from a single molten ore
+			cool_down(pos, node)
 		end
+		return true
 	end
 	return false
 end
@@ -224,7 +237,7 @@ minetest.register_abm({
 	chance = 40,
 	action = function(pos, node)
 		-- prefer the node below
-		if try_melt({x=pos.x, y=pos.y - 1, z=pos.z }) then
+		if try_conduct({x=pos.x, y=pos.y - 1, z=pos.z }) then
 			return
 		end
 
@@ -232,7 +245,7 @@ minetest.register_abm({
 		local start = random(4)
 		for i=0, 3 do
 			local dir = heat_conduct_dirs[(start + i) % 4 + 1]
-			if try_melt({x=pos.x + dir[1], y=pos.y, z=pos.z + dir[2]}) then
+			if try_conduct({x=pos.x + dir[1], y=pos.y, z=pos.z + dir[2]}) then
 				return
 			end
 		end

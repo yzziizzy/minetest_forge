@@ -49,6 +49,8 @@ Metal blocks can be remelted without loss. Reprocessing slag over and over may y
 Molten metals of different densities will float or sink relative to each other eventually.
 
 
+======
+Thanks to t4im for improvements and cleanup.
 
 forge_steam.png texture is LGPL (from mintest_game/tnt)
 Everything else WTFPL / Unlicense

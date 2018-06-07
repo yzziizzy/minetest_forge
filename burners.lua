@@ -1,8 +1,5 @@
 
 
-
-
-
 local function swap_node(pos, name)
 	local node = minetest.get_node(pos)
 	if node.name == name then
@@ -11,97 +8,6 @@ local function swap_node(pos, name)
 	node.name = name
 	minetest.swap_node(pos, node)
 end
-
-
-minetest.register_node("forge:coke", {
-    description = "Coke",
-    tiles = { "default_coal_block.png^[colorize:black:180" },
-    is_ground_content = true,
-    groups = {cracky=1, level=3, refractory=3},
-    sounds = default.node_sound_stone_defaults(),
-}) 
-
--- -------------------------------------------------
---  enclosure determination
-
-
-
-local function pushpos(t, v, p)
-	local h = minetest.hash_node_position(p)
-	if v[h] == nil then
-		table.insert(t, p)
-	end
-end
-
-
-local function find_blob_extent(startpos)
-	
-	local blob = {}
-	local stack = {}
-	local visited = {}
-	local shell = {}
-	
-	
-	local node = minetest.get_node(startpos)
-	if node.name == "air" then
-		return nil
-	end
-	
-	local bname = node.name
-	
-	table.insert(stack, startpos)
-	
-	while #stack > 0 do
-		
-		local p = table.remove(stack)
-		local ph = minetest.hash_node_position(p)
-		
-		print("visiting "..minetest.pos_to_string(p))
-		
-		if visited[ph] == nil then
-			visited[ph] = 1
-			
-			local pn = minetest.get_node(p)
-			if pn then
-				if pn.name == bname then
-					blob[ph] = {x=p.x, y=p.y, z=p.z}
-					
-					pushpos(stack, visited, {x=p.x+1, y=p.y, z=p.z})
-					pushpos(stack, visited, {x=p.x-1, y=p.y, z=p.z})
-					pushpos(stack, visited, {x=p.x, y=p.y+1, z=p.z})
-					pushpos(stack, visited, {x=p.x, y=p.y-1, z=p.z})
-					pushpos(stack, visited, {x=p.x, y=p.y, z=p.z+1})
-					pushpos(stack, visited, {x=p.x, y=p.y, z=p.z-1})
-				else
-					shell[pn.name] = (shell[pn.name] or 0) + 1
-				end
-			end
-		end
-	end
-	
-	
-	for _,p in pairs(blob) do
-		print("blob "..minetest.pos_to_string(p))
-	end
-	
-	for n,v in pairs(shell) do
-		print("shell "..n.." - ".. v)
-	end
-	
-	
-	return blob, shell
-end
-
-
-
-
-
-
-
--- ---------------------------------------------
-
-
-
 
 
 
@@ -154,22 +60,23 @@ local function grab_fuel(inv)
 	
 	local list = inv:get_list("fuel")
 	for i,st in ipairs(list) do
-	print(st:get_name())
-		local fuel, remains
-		fuel, remains = minetest.get_craft_result({
-			method = "fuel", 
-			width = 1, 
-			items = {
-				ItemStack(st:get_name())
-			},
-		})
+		if st:get_name() == "forge:coke" then
+			local fuel, remains
+			fuel, remains = minetest.get_craft_result({
+				method = "fuel", 
+				width = 1, 
+				items = {
+					ItemStack(st:get_name())
+				},
+			})
 
-		if fuel.time > 0 then
-			-- Take fuel from fuel list
-			st:take_item()
-			inv:set_stack("fuel", i, st)
-			
-			return fuel.time
+			if fuel.time > 0 then
+				-- Take fuel from fuel list
+				st:take_item()
+				inv:set_stack("fuel", i, st)
+				
+				return fuel.time
+			end
 		end
 	end
 	
@@ -178,12 +85,12 @@ end
 
 
 
-local function af_on_timer(pos, elapsed)
+local function burner_on_timer(pos, elapsed)
 
 	local meta = minetest.get_meta(pos)
 	local fuel_time = meta:get_float("fuel_time") or 0
 	local fuel_burned = meta:get_float("fuel_burned") or 0
-	local cook_time_remaining = meta:get_float("cook_time_remaining") or 10
+	local cook_time_remaining = meta:get_float("cook_time_remaining") or 60
 	
 	local inv = meta:get_inventory()
 	
@@ -234,18 +141,19 @@ local function af_on_timer(pos, elapsed)
 		else
 			print("finished")
 			
-			-- convert coal to coke
-			local blobs = meta:get_string("blob") or ""
-			local blob = minetest.deserialize(blobs)
-			
-			local p 
-			for _,pp in pairs(blob) do 
-				p = pp
-				break
+			local ore_nodes = minetest.find_nodes_in_area(
+						{x=pos.x - 3, y=pos.y + 1,z=pos.z - 3},
+						{x=pos.x + 3, y=pos.y + 5, z=pos.z + 3},
+						forge.meltable_ores
+					)
+			if #ore_nodes > 0 then
+				local i = math.random(1, #ore_nodes)
+				local p = ore_nodes[i]
+				local n = minetest.get_node(p)
+				if n ~= nil then
+					minetest.set_node(p, {name=forge.random_melt_product(n.name)})
+				end
 			end
-			minetest.set_node(p, {name="forge:coke"})
-			
-			meta:set_string("blob", minetest.serialize(blob))
 			
 			meta:set_float("cook_time_remaining", 10)
 		end
@@ -256,7 +164,7 @@ local function af_on_timer(pos, elapsed)
 	
 	
 	if turn_off then
-		swap_node(pos, "forge:coke_furnace")
+		swap_node(pos, "forge:burner")
 		return
 	end
 	
@@ -271,50 +179,10 @@ end
 
 
 
-local shell_nodes = {
-	["forge:coke_furnace"] = 1,
-	["forge:coke_furnace_on"] = 1,
-	["default:brick"] = 1,
-	["forge:refractory_brick"] = 1,
-}
-
-local function check_coke_oven(furnacepos)
-
-	local fnode = minetest.get_node(furnacepos)
-	local fdir = minetest.facedir_to_dir(fnode.param2)
-	local seedp = vector.add(furnacepos, fdir)
-	local seedn = minetest.get_node(seedp)
-	
-	if seedn == nil or seedn.name ~= "default:coalblock" then 
-		print("not coal")
-		return false
-	end
-	
-	local fuel, oven = find_blob_extent(seedp)
-	
-	local oven_intact = 1
-	for name,_ in pairs(oven) do
-		if shell_nodes[name] == nil then
-			print("failing for ".. name)
-			oven_intact = 0
-			break
-		end
-	end
-	
-	if oven_intact == 0 then
-		print("not intact")
-		return false
-	end
-	
-	local meta = minetest.get_meta(furnacepos)
-	meta:set_string("blob", minetest.serialize(fuel))
-	
-	return true
-end
 
 
-minetest.register_node("forge:coke_furnace_on", {
-	description = "Coke furnace (active)",
+minetest.register_node("forge:burner_on", {
+	description = "Forge Burner (active)",
 	tiles = {
 		"default_steel_block.png", "default_steel_block.png",
 		"default_steel_block.png", "default_steel_block.png",
@@ -331,7 +199,7 @@ minetest.register_node("forge:coke_furnace_on", {
 		}
 	},
 	paramtype2 = "facedir",
-	groups = {cracky=2},
+	groups = {cracky=1, refractory=1},
 	legacy_facedir_simple = true,
 	is_ground_content = false,
 	sounds = default.node_sound_stone_defaults(),
@@ -339,7 +207,7 @@ minetest.register_node("forge:coke_furnace_on", {
 
 	can_dig = can_dig,
 
-	on_timer = af_on_timer,
+	on_timer = burner_on_timer,
 
 	on_construct = function(pos)
 		local meta = minetest.get_meta(pos)
@@ -361,7 +229,7 @@ minetest.register_node("forge:coke_furnace_on", {
 	
 	
 	on_punch = function(pos)
-		swap_node(pos, "forge:coke_furnace")
+		swap_node(pos, "forge:burner")
 	end,
 	
 	
@@ -385,15 +253,15 @@ minetest.register_node("forge:coke_furnace_on", {
 
 
 
-minetest.register_node("forge:coke_furnace", {
-	description = "Coke Furnace",
+minetest.register_node("forge:burner", {
+	description = "Forge Burner",
 	tiles = {
 		"default_steel_block.png", "default_steel_block.png",
 		"default_steel_block.png", "default_steel_block.png",
 		"default_steel_block.png", "default_furnace_front.png"
 	},
 	paramtype2 = "facedir",
-	groups = {cracky=2},
+	groups = {cracky=1, refractory=1},
 	legacy_facedir_simple = true,
 	is_ground_content = false,
 	sounds = default.node_sound_stone_defaults(),
@@ -421,12 +289,8 @@ minetest.register_node("forge:coke_furnace", {
 	end,
 	
 	on_punch = function(pos, node, player)
-		if check_coke_oven(pos) then
-			swap_node(pos, "forge:coke_furnace_on")
-			minetest.get_node_timer(pos):start(1.0)
-		else
-			minetest.chat_send_player(player:get_player_name(), "Coke oven is incomplete.")
-		end
+		swap_node(pos, "forge:burner_on")
+		minetest.get_node_timer(pos):start(1.0)
 	end,
 	
 -- 	on_blast = function(pos)
@@ -452,35 +316,12 @@ minetest.register_node("forge:coke_furnace", {
 
 
 minetest.register_craft({
-	output = 'forge:coke_furnace',
+	output = 'forge:burner',
 	recipe = {
 		{'forge:refractory_brick', 'forge:refractory_brick', 'forge:refractory_brick'},
-		{'forge:refractory_brick', '',        'forge:refractory_brick'},
+		{'forge:refractory_brick', 'default:furnace',        'forge:refractory_brick'},
 		{'forge:refractory_brick', 'forge:refractory_brick', 'forge:refractory_brick'},
 	}
 })
-
-
-
-
-minetest.register_craft({
-	type = "fuel",
-	recipe = "forge:coke",
-	burntime = 120,
-})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

@@ -8,7 +8,8 @@ local modpath = minetest.get_modpath(modname)
 
 local setting_melt_difficulty = 10
 
-local forge = {}
+forge = {}
+
 
 local melt_total = {}
 local melt_yields = {}
@@ -17,9 +18,11 @@ local cools_to = {}
 local melt_densities = {}
 local melt_energy_requirement = {}
 local molten_sources = {}
+forge.meltable_ores = meltable_ores
 
 dofile(modpath .. "/shell.lua")
 dofile(modpath.."/coke.lua")
+dofile(modpath.."/burners.lua")
 
 
 -- technic support
@@ -28,7 +31,7 @@ dofile(modpath.."/electrode.lua")
 
 
 
-local function random_melt_product(name)
+forge.random_melt_product = function(name)
 	if melt_total[name] == 0 or melt_total[name] == nil then
 		return modname..":molten_slag"
 	end
@@ -44,6 +47,7 @@ local function random_melt_product(name)
 
 	return modname..":molten_slag"
 end
+local random_melt_product = forge.random_melt_product
 
 forge.max_heat = 0
 

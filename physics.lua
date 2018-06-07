@@ -18,7 +18,7 @@ local function cool_down(pos, node)
 	end
 
 	minetest.set_node(pos, {name = cold_name})
-	nodeupdate(pos)
+	--minetest.nodeupdate(pos)
 	return true
 end
 
@@ -127,6 +127,11 @@ minetest.register_abm({
 local function is_heated(pos, node)
 	-- don't cool near active electrodes
 	if minetest.find_node_near(pos, 4, {modname..":electrode_on"}) then
+		return true
+	end
+
+	-- BUG: should only heat above it
+	if minetest.find_node_near(pos, 4, {modname..":burner_on"}) then
 		return true
 	end
 

@@ -4,12 +4,14 @@ local forge = ...
 forge.register_ore("default:desert_cobble", 400, {
 	steel = 1,
 	copper = 3,
+	tin = 2,
 	slag = 40,
 })
 
 forge.register_ore("default:cobble", 400, {
 	steel = 3,
 	copper = 1,
+	tin = 1,
 	slag = 40,
 })
 
@@ -44,6 +46,7 @@ forge.register_ore("default:sand", 350, {
 forge.register_ore("default:sandstone", 370, {
 	glass = 10,
 	slag = 1,
+	tin = 1,
 })
 
 -- remelting

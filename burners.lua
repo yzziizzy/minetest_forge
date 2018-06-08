@@ -318,9 +318,9 @@ minetest.register_node("forge:burner", {
 minetest.register_craft({
 	output = 'forge:burner',
 	recipe = {
-		{'forge:refractory_brick', 'forge:refractory_brick', 'forge:refractory_brick'},
-		{'forge:refractory_brick', 'default:furnace',        'forge:refractory_brick'},
-		{'forge:refractory_brick', 'forge:refractory_brick', 'forge:refractory_brick'},
+		{'forge:refractory_clay_brick', 'forge:refractory_clay_brick', 'forge:refractory_clay_brick'},
+		{'forge:refractory_clay_brick', 'default:furnace',        'forge:refractory_clay_brick'},
+		{'forge:refractory_clay_brick', 'forge:refractory_clay_brick', 'forge:refractory_clay_brick'},
 	}
 })
 

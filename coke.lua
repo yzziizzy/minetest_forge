@@ -454,9 +454,9 @@ minetest.register_node("forge:coke_furnace", {
 minetest.register_craft({
 	output = 'forge:coke_furnace',
 	recipe = {
-		{'forge:refractory_brick', 'forge:refractory_brick', 'forge:refractory_brick'},
-		{'forge:refractory_brick', '',        'forge:refractory_brick'},
-		{'forge:refractory_brick', 'forge:refractory_brick', 'forge:refractory_brick'},
+		{'forge:refractory_clay_brick', 'forge:refractory_clay_brick', 'forge:refractory_clay_brick'},
+		{'forge:refractory_clay_brick', '',        'forge:refractory_clay_brick'},
+		{'forge:refractory_clay_brick', 'forge:refractory_clay_brick', 'forge:refractory_clay_brick'},
 	}
 })
 

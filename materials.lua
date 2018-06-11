@@ -14,6 +14,12 @@ forge.register_ore("default:cobble", 400, {
 	tin = 1,
 	slag = 40,
 })
+forge.register_ore("default:mossycobble", 400, {
+	steel = 3,
+	copper = 1,
+	tin = 1,
+	slag = 40,
+})
 
 forge.register_ore("default:dirt", 550, {
 	steel = 10,
@@ -54,7 +60,7 @@ forge.register_ore("default:steelblock", 200, {steel = 1})
 forge.register_ore("default:copperblock", 200, {copper = 1})
 forge.register_ore("default:goldblock", 200, {gold = 1})
 forge.register_ore("default:bronzeblock", 200, {bronze = 1})
-forge.register_ore("moreores:tin_block", 100, {tin = 1})
+forge.register_ore("default:tin_block", 100, {tin = 1})
 forge.register_ore("moreores:silver_block", 200, {silver = 1})
 forge.register_ore("technic:chromium_block", 200, {chromium = 1})
 forge.register_ore("technic:zinc_block", 200, {zinc = 1})
@@ -109,7 +115,7 @@ forge.register_metal({
 forge.register_metal({
 	name="tin",
 	Name="Tin",
-	cools="moreores:tin_block",
+	cools="default:tinblock",
 	density=4,
 })
 

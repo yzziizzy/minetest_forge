@@ -155,7 +155,7 @@ local function burner_on_timer(pos, elapsed)
 				end
 			end
 			
-			meta:set_float("cook_time_remaining", 10)
+			meta:set_float("cook_time_remaining", 4)
 		end
 		
 		
@@ -323,5 +323,157 @@ minetest.register_craft({
 		{'forge:refractory_clay_brick', 'forge:refractory_clay_brick', 'forge:refractory_clay_brick'},
 	}
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+if minetest.global_exists("bitumen") and bitumen then 
+
+
+
+
+	minetest.register_node("forge:oil_burner_on", {
+		description = "Forge Oil Burner (active)",
+		tiles = {
+			"default_steel_block.png", "default_steel_block.png",
+			"default_steel_block.png", "default_steel_block.png",
+			"default_steel_block.png",
+			{
+				image = "default_furnace_front_active.png",
+				backface_culling = false,
+				animation = {
+					type = "vertical_frames",
+					aspect_w = 16,
+					aspect_h = 16,
+					length = 1.5
+				},
+			}
+		},
+		paramtype2 = "facedir",
+		groups = {cracky=1, refractory=1},
+		legacy_facedir_simple = true,
+		is_ground_content = false,
+		sounds = default.node_sound_stone_defaults(),
+		drops = "forge:oil_burner",
+		
+		on_punch = function(pos)
+			swap_node(pos, "forge:oil_burner")
+		end,
+		
+	})
+
+
+
+
+
+
+	minetest.register_node("forge:oil_burner", {
+		description = "Forge Oil Burner",
+		tiles = {
+			"default_steel_block.png", "default_steel_block.png",
+			"default_steel_block.png", "default_steel_block.png",
+			"default_steel_block.png", "default_furnace_front.png"
+		},
+		paramtype2 = "facedir",
+		groups = {cracky=1, refractory=1},
+		legacy_facedir_simple = true,
+		is_ground_content = false,
+		sounds = default.node_sound_stone_defaults(),
+
+		on_construct = function(pos)
+
+		end,
+		
+		on_punch = function(pos, node, player)
+			swap_node(pos, "forge:oil_burner_on")
+		end,
+		
+	})
+
+
+
+
+	minetest.register_abm({
+		nodenames = {"forge:oil_burner_on"},
+		interval = 2,
+		chance   = 1,
+		action = function(pos, node, active_object_count, active_object_count_wider)
+			local npos = {x=pos.x, y=pos.y - 1, z=pos.z}
+			local pnet = bitumen.pipes.get_net(npos)
+			
+			
+			if not pnet or pnet.buffer <= 0 then
+				print("oil burner: no oil in pipe")
+				return -- no oil in the pipe
+			end
+			
+			if pnet.fluid ~= "bitumen:heavy_oil" then
+				print("barrel filler: bad_fluid ".. pnet.fluid)
+				return -- incompatible fluids
+			end
+			
+			
+			local to_take = 1
+			if pnet.buffer <= to_take then
+				print("oil burner: not enough fuel")
+				return
+			end
+			
+			local taken, fluid = bitumen.pipes.take_fluid(npos, to_take)
+			if fluid == "air" then
+				print("oil burner: failed to take enough fuel")
+				return
+			end
+			
+			
+			
+			local ore_nodes = minetest.find_nodes_in_area(
+				{x=pos.x - 1, y=pos.y + 1,z=pos.z - 1},
+				{x=pos.x + 1, y=pos.y + 2, z=pos.z + 1},
+				forge.meltable_ores
+			)
+			if #ore_nodes > 0 then
+				local i = math.random(1, #ore_nodes)
+				local p = ore_nodes[i]
+				local n = minetest.get_node(p)
+				if n ~= nil then
+					minetest.set_node(p, {name=forge.random_melt_product(n.name)})
+				end
+			end
+			
+		end
+	})
+
+
+
+	minetest.register_craft({
+		output = 'forge:oil_burner',
+		type = "shapeless",
+		recipe = {'forge:burner', 'bitumen:pipe'},
+	})
+
+
+
+end
+
+
+
+
+
+
+
+
+
+
+
 
 

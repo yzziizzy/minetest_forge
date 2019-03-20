@@ -18,7 +18,7 @@ local function cool_down(pos, node)
 	end
 
 	minetest.set_node(pos, {name = cold_name})
-	--minetest.nodeupdate(pos)
+	minetest.spawn_falling_node(pos)-- so cooled ores fall to the bottom of a pool of water
 	return true
 end
 

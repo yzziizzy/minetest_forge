@@ -17,7 +17,7 @@ minetest.register_node("forge:coke", {
     description = "Coke",
     tiles = { "default_coal_block.png^[colorize:black:180" },
     is_ground_content = true,
-    groups = {cracky=1, level=3, refractory=3},
+    groups = {cracky=2, level=2, refractory=3},
     sounds = default.node_sound_stone_defaults(),
 }) 
 
@@ -203,7 +203,7 @@ local function af_on_timer(pos, elapsed)
 	else
 		local t = grab_fuel(inv)
 		if t <= 0 then -- out of fuel
-			--print("out of fuel")
+			print("out of fuel")
 			meta:set_float("fuel_time", 0)
 			meta:set_float("fuel_burned", 0)
 			
@@ -215,7 +215,7 @@ local function af_on_timer(pos, elapsed)
 			fuel_burned =  elapsed - (fuel_time - fuel_burned)
 			fuel_time = t
 			
-			--print("fuel remaining: " .. (fuel_time - fuel_burned))
+			print("fuel remaining: " .. (fuel_time - fuel_burned))
 		
 			meta:set_float("fuel_time", fuel_time)
 			meta:set_float("fuel_burned", fuel_burned)
@@ -239,15 +239,16 @@ local function af_on_timer(pos, elapsed)
 			local blob = minetest.deserialize(blobs)
 			
 			local p 
-			for _,pp in pairs(blob) do 
+			for i,pp in pairs(blob) do 
 				p = pp
+				blob[i] = nil
 				break
 			end
 			minetest.set_node(p, {name="forge:coke"})
 			
 			meta:set_string("blob", minetest.serialize(blob))
 			
-			meta:set_float("cook_time_remaining", 10)
+			meta:set_float("cook_time_remaining", 5)
 		end
 		
 		

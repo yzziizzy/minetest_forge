@@ -135,6 +135,11 @@ local function is_heated(pos, node)
 		return true
 	end
 
+	-- BUG: should only heat above it
+	if minetest.find_node_near(pos, 3, {modname..":oil_burner_on"}) then
+		return true
+	end
+
 	-- don't cool near heater bricks
 	if minetest.find_node_near(pos, 1, {modname..":furnace_heater"}) then
 		return true

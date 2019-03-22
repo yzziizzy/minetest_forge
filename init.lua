@@ -23,6 +23,7 @@ forge.meltable_ores = meltable_ores
 dofile(modpath .. "/shell.lua")
 dofile(modpath.."/coke.lua")
 dofile(modpath.."/burners.lua")
+dofile(modpath.."/spout.lua")
 
 
 -- technic support

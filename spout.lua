@@ -14,8 +14,25 @@ end
 
 minetest.register_node("forge:spout", {
 	description = "Spout",
-	drawtype = "normal",
-	tiles = {"default_steel_block.png"},
+	drawtype = "nodebox",
+	node_box = {
+		type = "fixed",
+		fixed = {
+			-- top bar
+			{-.3, .3, -.35, .3, .5, .35},
+			
+			-- sides
+			{-.5, -.5, -.35, -.3, .5, .35},
+			{.3, -.5, -.35, .5, .5, .35},
+			
+			-- bottom bar
+			{-.3, -.5, -.35, .3, -.3, .35},
+			
+			-- gate
+			{-.45, -.45, -.1, .45, .45, .1 },
+		},
+	},
+	tiles = {"default_bronze_block.png"},
 	is_ground_content = false,
 	paramtype2 = "facedir",
 	groups = {cracky = 1, petroleum_fixture=1, oddly_breakable_by_hand = 3},
@@ -31,8 +48,23 @@ minetest.register_node("forge:spout", {
 
 minetest.register_node("forge:spout_open", {
 	description = "Spout",
-	drawtype = "normal",
-	tiles = {"default_steel_block.png"},
+	drawtype = "nodebox",
+	node_box = {
+		type = "fixed",
+		fixed = {
+			-- top bar
+			{-.3, .3, -.35, .3, .5, .35},
+			
+			-- sides
+			{-.5, -.5, -.35, -.3, .5, .35},
+			{.3, -.5, -.35, .5, .5, .35},
+			
+			-- bottom bar
+			{-.3, -.5, -.35, .3, -.3, .35},
+			
+		},
+	},
+	tiles = {"default_bronze_block.png"},
 	is_ground_content = false,
 	paramtype2 = "facedir",
 	groups = {cracky = 1, petroleum_fixture=1, oddly_breakable_by_hand = 3},
@@ -49,7 +81,7 @@ minetest.register_node("forge:spout_open", {
 
 minetest.register_abm({
 	nodenames = {"forge:spout_open"},
-	interval = 3,
+	interval = 4,
 	chance   = 1,
 	action = function(pos, node, active_object_count, active_object_count_wider)
 		local node = minetest.get_node(pos)

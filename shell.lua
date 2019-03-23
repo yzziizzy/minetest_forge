@@ -14,7 +14,7 @@ minetest.register_node(modname..":refractory_brick", {
 	description = "Refractory Brick",
 	tiles = { "default_brick.png^[colorize:white:120" },
 	is_ground_content = true,
-	groups = {cracky=1, level=3, refractory=3},
+	groups = {cracky=1, level=1, refractory=3},
 	sounds = default.node_sound_stone_defaults(),
 })
 
@@ -22,7 +22,7 @@ minetest.register_node(modname..":furnace_heater", {
 	description = "Furnace Heater",
 	tiles = { "default_brick.png^[colorize:blue:120" },
 	is_ground_content = true,
-	groups = {cracky=1, level=3, refractory=3},
+	groups = {cracky=1, level=1, refractory=3},
 	sounds = default.node_sound_stone_defaults(),
 })
 

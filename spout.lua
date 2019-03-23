@@ -35,7 +35,7 @@ minetest.register_node("forge:spout", {
 	tiles = {"default_bronze_block.png"},
 	is_ground_content = false,
 	paramtype2 = "facedir",
-	groups = {cracky = 1, petroleum_fixture=1, oddly_breakable_by_hand = 3},
+	groups = {cracky = 1, petroleum_fixture=1, refractory = 3},
 	sounds = default.node_sound_glass_defaults(),
 	on_place = minetest.rotate_node,
 
@@ -67,7 +67,7 @@ minetest.register_node("forge:spout_open", {
 	tiles = {"default_bronze_block.png"},
 	is_ground_content = false,
 	paramtype2 = "facedir",
-	groups = {cracky = 1, petroleum_fixture=1, oddly_breakable_by_hand = 3},
+	groups = {cracky = 1, petroleum_fixture=1, refractory = 3},
 	sounds = default.node_sound_glass_defaults(),
 	on_place = minetest.rotate_node,
 
@@ -95,7 +95,7 @@ minetest.register_abm({
 		local fnode = minetest.get_node(frontpos)
 		
 		if fnode.name ~= "air" and bnode.name ~= "air" then
-			print("forge spout: nowhere to flow to")
+		--	print("forge spout: nowhere to flow to")
 			return
 		end
 		
@@ -103,7 +103,7 @@ minetest.register_abm({
 		local fdef = minetest.registered_nodes[fnode.name]
 		
 		if not bdef.groups.molten_ore_source and not fdef.groups.molten_ore_source then
-			print("forge spout: no molten ore source")
+		--	print("forge spout: no molten ore source")
 			return
 		end
 		
@@ -128,7 +128,7 @@ minetest.register_abm({
 
 
 minetest.register_craft({
-	output = 'forge:burner',
+	output = 'forge:spout',
 	recipe = {
 		{'forge:refractory_clay_brick', 'default:steel_ingot', 'forge:refractory_clay_brick'},
 		{'', '', ''},

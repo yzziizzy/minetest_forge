@@ -438,7 +438,7 @@ if minetest.global_exists("bitumen") and bitumen then
 			
 			local ore_nodes = minetest.find_nodes_in_area(
 				{x=pos.x - 1, y=pos.y + 1,z=pos.z - 1},
-				{x=pos.x + 1, y=pos.y + 2, z=pos.z + 1},
+				{x=pos.x + 1, y=pos.y + 6, z=pos.z + 1},
 				forge.meltable_ores
 			)
 			if #ore_nodes > 0 then

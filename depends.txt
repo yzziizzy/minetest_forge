@@ -1,4 +1,0 @@
-default 
-technic?
-mesecons?
-bitumen?

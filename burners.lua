@@ -60,7 +60,7 @@ local function grab_fuel(inv)
 	
 	local list = inv:get_list("fuel")
 	for i,st in ipairs(list) do
-		if st:get_name() == "forge:coke" then
+		if st:get_name() == "forge:coke" or st:get_name() == "geology:anthracite" then
 			local fuel, remains
 			fuel, remains = minetest.get_craft_result({
 				method = "fuel", 

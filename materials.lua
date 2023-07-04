@@ -55,6 +55,11 @@ forge.register_ore("default:sandstone", 370, {
 	tin = 1,
 })
 
+forge.register_ore("geology:hematite", 370, {
+	slag = 1,
+	steel = 1,
+})
+
 -- remelting
 forge.register_ore("default:steelblock", 200, {steel = 1})
 forge.register_ore("default:copperblock", 200, {copper = 1})

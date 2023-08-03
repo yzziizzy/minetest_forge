@@ -56,7 +56,7 @@ forge.register_ore("default:sandstone", 370, {
 })
 
 forge.register_ore("geology:hematite", 370, {
-	slag = 1,
+	slag = 4,
 	steel = 1,
 })
 

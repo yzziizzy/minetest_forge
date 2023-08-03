@@ -142,8 +142,8 @@ local function burner_on_timer(pos, elapsed)
 			print("finished")
 			
 			local ore_nodes = minetest.find_nodes_in_area(
-						{x=pos.x - 3, y=pos.y + 1,z=pos.z - 3},
-						{x=pos.x + 3, y=pos.y + 5, z=pos.z + 3},
+						{x=pos.x - 5, y=pos.y + 0, z=pos.z - 5},
+						{x=pos.x + 5, y=pos.y + 9, z=pos.z + 5},
 						forge.meltable_ores
 					)
 			if #ore_nodes > 0 then

@@ -178,9 +178,85 @@ function forge.register_metal(opts)
 			not_in_creative_inventory = 1
 		},
 	})
+	
+	-- ingot molds
+	if nil ~= opts.ingot then
+		-- TODO: hot
+		minetest.register_node(modname..":mold_"..opts.name, {
+			description = "Ingot Mold",
+			tiles = {
+				"default_silver_sand.png^(forge_ingots.png^[colorize:"..opts.ingot_color..")", "default_silver_sand.png", 
+				"default_silver_sand.png", "default_silver_sand.png",
+				"default_silver_sand.png", "default_silver_sand.png"
+			},
+			groups = {crumbly=3, refractory=1, falling_node=1},
+			is_ground_content = false,
+			sounds = default.node_sound_stone_defaults(),
+			drop = { 
+				max_items = 2,
+				items = {
+					{items = {"default:silver_sand"}},
+					{items = {opts.ingot.." 9"}}
+				}
+			},
+			--[[on_punch = function(pos, node, puncher)
+				local inv = puncher:get_inventory()
+				inv:add_item("main", opts.ingot.." 9")
+				
+				minetest.set_node(pos, {name = modname..":mold"})
+			end,]]
+		})
+		
+		
+		minetest.register_abm({
+			nodenames = {modname..":molten_"..opts.name},
+			neightbors = {modname..":mold"},
+			interval = 2,
+			chance = 1,
+			action = function(pos, node)
+				-- look one node out
+				local molds = minetest.find_nodes_in_area(
+					{x=pos.x - 1, y=pos.y, z=pos.z - 1},
+					{x=pos.x + 1, y=pos.y + 1, z=pos.z + 1},
+					modname..":mold"
+				)
+				
+				if #molds == 0 then
+					return
+				end
+				
+				local mold = molds[math.random(#molds)]
+				
+				minetest.set_node(mold, {name = modname..":mold_"..opts.name})
+				minetest.set_node(pos, {name = "air"})
+			end,
+		})
+		
+		minetest.register_craft({
+			output = modname..":mold 1",
+			type = "shapeless",
+			recipe = {
+				'default:silver_sand',
+				opts.ingot
+			},
+			replacements = {{opts.ingot, opts.ingot}},
+		})
+		
+	end
+	
+	
+	
+	
+	
+	
+	
+	
+	
 end -- forge.register_metal
 
 assert(loadfile(modpath .. "/slag.lua"))(forge)
 assert(loadfile(modpath .. "/materials.lua"))(forge)
 assert(loadfile(modpath .. "/physics.lua"))(cools_to, melt_densities, random_melt_product)
 assert(loadfile(modpath .. "/electrode.lua"))(forge, melt_energy_requirement, meltable_ores, random_melt_product)
+
+

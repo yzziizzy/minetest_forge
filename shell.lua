@@ -76,6 +76,24 @@ minetest.register_craft({
 	}
 })
 
+
+
+minetest.register_node("forge:mold", {
+	description = "Ingot Mold",
+	tiles = {
+		"default_silver_sand.png^(forge_ingots.png^[colorize:black:200)", "default_silver_sand.png", 
+		"default_silver_sand.png", "default_silver_sand.png",
+		"default_silver_sand.png", "default_silver_sand.png"
+	},
+	use_texture_alpha = "blend",
+	groups = {crumbly=3, refractory=1, falling_node=1},
+	is_ground_content = false,
+	sounds = default.node_sound_stone_defaults(),
+})
+
+
+
+
 --[[
 minetest.register_node(mn..":crucible_spout", {
 	description = "Crucible Spout",

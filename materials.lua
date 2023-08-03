@@ -80,6 +80,8 @@ forge.register_metal({
 	name="steel",
 	Name="Steel",
 	cools="default:steelblock",
+	ingot="default:steel_ingot",
+	ingot_color="#eee:255", 
 	density=10,
 })
 
@@ -87,6 +89,8 @@ forge.register_metal({
 	name="copper",
 	Name="Copper",
 	cools="default:copperblock",
+	ingot="default:copper_ingot",
+	ingot_color="#a60:255", 
 	density=8,
 })
 
@@ -94,6 +98,8 @@ forge.register_metal({
 	name="bronze",
 	Name="Bronze",
 	cools="default:bronzeblock",
+	ingot="default:bronze_ingot",
+	ingot_color="#840:255", 
 	density=9,
 })
 
@@ -101,12 +107,16 @@ forge.register_metal({
 	name="gold",
 	Name="Gold",
 	cools="default:goldblock",
+	ingot="default:gold_ingot",
+	ingot_color="#fe0:255", 
 	density=20,
 })
 forge.register_metal({
 	name="silver",
 	Name="Silver",
 	cools="moreores:silver_block",
+	ingot="moreores:silver_ingot",
+	ingot_color="#ccf:255", 
 	density=16,
 })
 
@@ -114,6 +124,8 @@ forge.register_metal({
 	name="zinc",
 	Name="Zinc",
 	cools="technic:zinc_block",
+	ingot="technic:zinc_ingot",
+	ingot_color="#ccf:255", 
 	density=4,
 })
 
@@ -121,6 +133,8 @@ forge.register_metal({
 	name="tin",
 	Name="Tin",
 	cools="default:tinblock",
+	ingot="default:tin_ingot",
+	ingot_color="#ddd:255", 
 	density=4,
 })
 
@@ -128,6 +142,8 @@ forge.register_metal({
 	name="chromium",
 	Name="Chromium",
 	cools="technic:chromium_block",
+	ingot="technic:chromium_ingot",
+	ingot_color="#eee:255", 
 	density=12,
 })
 
@@ -135,6 +151,8 @@ forge.register_metal({
 	name="lead",
 	Name="Lead",
 	cools="technic:lead_block",
+	ingot="technic:lead_ingot",
+	ingot_color="#555:255", 
 	density=19,
 })
 
@@ -142,6 +160,8 @@ forge.register_metal({
 	name="carbon_steel",
 	Name="Carbon Steel",
 	cools="technic:carbon_steel_block",
+	ingot="technic:carbon_steel_ingot",
+	ingot_color="#555:255", 
 	density=10,
 })
 
@@ -149,6 +169,8 @@ forge.register_metal({
 	name="stainless_steel",
 	Name="Stainless Steel",
 	cools="technic:stainless_steel_block",
+	ingot="technic:stainless_steel_ingot",
+	ingot_color="#eef:255", 
 	density=10,
 })
 
@@ -156,6 +178,8 @@ forge.register_metal({
 	name="cast_iron",
 	Name="Cast Iron",
 	cools="technic:cast_iron_block",
+	ingot="technic:cast_iron_ingot",
+	ingot_color="#666:255", 
 	density=10,
 })
 
@@ -163,6 +187,8 @@ forge.register_metal({
 	name="brass",
 	Name="Brass",
 	cools="technic:brass_block",
+	ingot="technic:brass_ingot",
+	ingot_color="#cf0:255", 
 	density=7,
 })
 
@@ -170,5 +196,7 @@ forge.register_metal({
 	name="glass",
 	Name="Glass",
 	cools="default:glass",
+	ingot="vessels:glass_fragments",
+	ingot_color="#fff:255", 
 	density=3,
 })

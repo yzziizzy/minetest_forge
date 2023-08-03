@@ -10,6 +10,20 @@ minetest.register_node(modname..":slag", {
 	sounds = default.node_sound_stone_defaults(),
 })
 
+minetest.register_craftitem(modname..":slag_lump", {
+	description = "Slag Lump",
+	inventory_image = "default_clay_lump.png^[colorize:brown:80",
+})
+
+minetest.register_craft({
+	output = modname..":slag",
+	recipe = {
+		{modname..":slag_lump",modname..":slag_lump",modname..":slag_lump"},
+		{modname..":slag_lump",modname..":slag_lump",modname..":slag_lump"},
+		{modname..":slag_lump",modname..":slag_lump",modname..":slag_lump"},
+	}
+})
+
 forge.register_ore(modname..":slag", 600, {
 	steel = 1,
 	copper = 1,
@@ -21,6 +35,8 @@ forge.register_metal({
 	name="slag",
 	Name="Slag",
 	cools=modname..":slag",
+	ingot=modname..":slag_lump",
+	ingot_color="brown:80", 
 	density=3,
 })
 
